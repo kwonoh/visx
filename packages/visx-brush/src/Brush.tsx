@@ -11,7 +11,7 @@ import {
 } from './types';
 import { scaleInvert, getDomainFromExtent } from './utils';
 
-const SAFE_PIXEL = 2;
+const SAFE_PIXEL = 0;
 const DEFAULT_COLOR = 'steelblue';
 
 export type BrushProps = {
