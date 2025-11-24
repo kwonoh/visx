@@ -1,3 +1,4 @@
+// @visx/curve
 export {
   curveBasis,
   curveBasisClosed,
@@ -17,4 +18,4 @@ export {
   curveMonotoneX,
   curveMonotoneY,
   curveNatural,
-} from 'd3-shape';
+} from '@visx/vendor/d3-shape';

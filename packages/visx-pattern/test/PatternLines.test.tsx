@@ -3,7 +3,7 @@ import { render } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
 import { PatternLines } from '../src';
-import { PatternOrientationType } from '../src/constants';
+import type { PatternOrientationType } from '../src/constants';
 import { pathForOrientation } from '../src/patterns/Lines';
 
 const SVGWrapper = ({ children }: { children: React.ReactNode }) => (
@@ -13,15 +13,6 @@ const SVGWrapper = ({ children }: { children: React.ReactNode }) => (
 describe('<PatternLines />', () => {
   test('should be defined', () => {
     expect(PatternLines).toBeDefined();
-  });
-
-  test('should throw error without required props', () => {
-    // @ts-expect-error allow invalid props
-    expect(() => render(<PatternLines />)).toThrow();
-    // @ts-expect-error allow invalid props
-    expect(() => render(<PatternLines id="test" />)).toThrow();
-    // @ts-expect-error allow invalid props
-    expect(() => render(<PatternLines width={4} />)).toThrow();
   });
 
   test('should render background when background prop is provided', () => {

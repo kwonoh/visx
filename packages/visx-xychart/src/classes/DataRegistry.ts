@@ -1,5 +1,5 @@
-import { AxisScale } from '@visx/axis';
-import { DataRegistryEntry } from '../types/data';
+import type { AxisScale } from '@visx/axis';
+import type { DataRegistryEntry } from '../types/data';
 
 /** A class for holding data entries */
 export default class DataRegistry<
@@ -19,9 +19,6 @@ export default class DataRegistry<
   ) {
     const entries = Array.isArray(entryOrEntries) ? entryOrEntries : [entryOrEntries];
     entries.forEach((currEntry) => {
-      if (currEntry.key in this.registry && this.registry[currEntry.key] != null) {
-        console.debug('Overriding data registry key', currEntry.key);
-      }
       this.registry[currEntry.key] = currEntry;
       this.registryKeys = Object.keys(this.registry);
     });

@@ -1,17 +1,19 @@
 /* eslint jsx-a11y/mouse-events-have-key-events: 'off', @typescript-eslint/no-explicit-any: 'off' */
-import React, { useContext, useEffect } from 'react';
-import ParentSize from '@visx/responsive/lib/components/ParentSize';
-import { ResizeObserverPolyfill } from '@visx/responsive/lib/types';
-import { AxisScaleOutput } from '@visx/axis';
-import { ScaleConfig } from '@visx/scale';
+import { useContext, useEffect } from 'react';
+import type { ReactNode, PointerEvent } from 'react';
+import { ParentSize } from '@visx/responsive';
+import type { ResizeObserverPolyfill } from '@visx/responsive';
+import type { AxisScaleOutput } from '@visx/axis';
+import type { ScaleConfig } from '@visx/scale';
 
 import DataContext from '../context/DataContext';
-import { Margin, EventHandlerParams } from '../types';
+import type { Margin, EventHandlerParams } from '../types';
 import useEventEmitter from '../hooks/useEventEmitter';
 import EventEmitterProvider from '../providers/EventEmitterProvider';
 import TooltipContext from '../context/TooltipContext';
 import TooltipProvider from '../providers/TooltipProvider';
-import DataProvider, { DataProviderProps } from '../providers/DataProvider';
+import type { DataProviderProps } from '../providers/DataProvider';
+import DataProvider from '../providers/DataProvider';
 import useEventEmitters from '../hooks/useEventEmitters';
 import { XYCHART_EVENT_SOURCE } from '../constants';
 import useEventHandlers, {
@@ -37,7 +39,7 @@ export type XYChartProps<
   /** Margin to apply around the outside. */
   margin?: Margin;
   /** XYChart children (Series, Tooltip, etc.). */
-  children: React.ReactNode;
+  children: ReactNode;
   /** If DataContext is not available, XYChart will wrap itself in a DataProvider and set this as the theme. */
   theme?: DataProviderProps<XScaleConfig, YScaleConfig>['theme'];
   /** If DataContext is not available, XYChart will wrap itself in a DataProvider and set this as the xScale config. */
@@ -59,7 +61,7 @@ export type XYChartProps<
   /** Callback invoked for onPointerOut events for the nearest Datum to the PointerEvent _for each Series with pointerEvents={true}_. */
   onPointerOut?: (
     /** The PointerEvent. */
-    event: React.PointerEvent,
+    event: PointerEvent,
   ) => void;
   /** Callback invoked for onPointerUp events for the nearest Datum to the PointerEvent _for each Series with pointerEvents={true}_. */
   onPointerUp?: ({

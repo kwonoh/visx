@@ -1,6 +1,6 @@
-import { AxisScale } from '@visx/axis';
-import React from 'react';
-import BaseLineSeries, { BaseLineSeriesProps } from './private/BaseLineSeries';
+import type { AxisScale } from '@visx/axis';
+import type { BaseLineSeriesProps } from './private/BaseLineSeries';
+import BaseLineSeries from './private/BaseLineSeries';
 
 export default function LineSeries<
   XScale extends AxisScale,

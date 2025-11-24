@@ -1,8 +1,13 @@
-import React from 'react';
+import type { ReactNode } from 'react';
 import cx from 'classnames';
 import { Group } from '@visx/group';
-import { Area as AreaType, Stack as StackType, SeriesPoint, Series } from 'd3-shape';
-import {
+import type {
+  Area as AreaType,
+  Stack as StackType,
+  SeriesPoint,
+  Series,
+} from '@visx/vendor/d3-shape';
+import type {
   $TSFIXME,
   AddSVGProps,
   AccessorForArrayItem,
@@ -20,7 +25,7 @@ export type StackProps<Datum, Key> = BaseStackProps<Datum, Key> & {
     stacks: Series<Datum, Key>[];
     path: AreaType<SeriesPoint<Datum>>;
     stack: StackType<$TSFIXME, Datum, Key>;
-  }) => React.ReactNode;
+  }) => ReactNode;
   /** Sets the x0 accessor function, and sets x1 to null. */
   x?: AccessorForArrayItem<SeriesPoint<Datum>, number>;
   /** Specifies the x0 accessor function which defaults to d => d[0]. */

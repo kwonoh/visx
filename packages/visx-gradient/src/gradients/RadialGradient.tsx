@@ -1,5 +1,5 @@
-import React from 'react';
-import { LinearGradientProps } from './LinearGradient';
+import type { SVGProps } from 'react';
+import type { LinearGradientProps } from './LinearGradient';
 
 export type RadialGradientProps = Pick<
   LinearGradientProps,
@@ -14,7 +14,7 @@ export type RadialGradientProps = Pick<
   | 'transform'
   | 'children'
 > &
-  React.SVGProps<SVGRadialGradientElement>; // passed as rest props to radialGradient
+  SVGProps<SVGRadialGradientElement>; // passed as rest props to radialGradient
 
 export default function RadialGradient({
   children,

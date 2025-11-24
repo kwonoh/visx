@@ -1,16 +1,12 @@
+import { vi } from 'vitest';
 import React from 'react';
 import { ResizeObserver } from '@juggle/resize-observer';
 import { render } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { AnyD3Scale } from '@visx/scale';
-import {
-  DataContext,
-  DataRegistryEntry,
-  Tooltip,
-  TooltipContext,
-  TooltipContextType,
-} from '../../src';
-import { TooltipProps } from '../../src/components/Tooltip';
+import type { AnyD3Scale } from '@visx/scale';
+import type { DataRegistryEntry, TooltipContextType } from '../../src';
+import { DataContext, Tooltip, TooltipContext } from '../../src';
+import type { TooltipProps } from '../../src/components/Tooltip';
 import getDataContext from '../mocks/getDataContext';
 
 describe('<Tooltip />', () => {
@@ -33,9 +29,9 @@ describe('<Tooltip />', () => {
         <TooltipContext.Provider
           value={{
             tooltipOpen: false,
-            showTooltip: jest.fn(),
-            updateTooltip: jest.fn(),
-            hideTooltip: jest.fn(),
+            showTooltip: vi.fn(),
+            updateTooltip: vi.fn(),
+            hideTooltip: vi.fn(),
             ...context,
           }}
         >
@@ -75,7 +71,7 @@ describe('<Tooltip />', () => {
   });
 
   it('should not invoke props.renderTooltip when TooltipContext.tooltipOpen=false', () => {
-    const renderTooltip = jest.fn(() => <div />);
+    const renderTooltip = vi.fn(() => <div />);
     setup({
       props: { renderTooltip },
     });
@@ -83,7 +79,7 @@ describe('<Tooltip />', () => {
   });
 
   it('should invoke props.renderTooltip when TooltipContext.tooltipOpen=true', () => {
-    const renderTooltip = jest.fn(() => <div />);
+    const renderTooltip = vi.fn(() => <div />);
     setup({
       props: { renderTooltip },
       context: { tooltipOpen: true },

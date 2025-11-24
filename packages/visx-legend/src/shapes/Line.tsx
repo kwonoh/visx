@@ -1,11 +1,15 @@
-import React from 'react';
+import type { CSSProperties } from 'react';
 import { Group } from '@visx/group';
 
 export type ShapeShapeLineProps = {
+  /** The stroke color for the line. Note: Despite the name, this is used as the stroke, not fill. */
   fill?: string;
+  /** Width of the line. */
   width?: string | number;
+  /** Height of the container. The line is vertically centered. */
   height?: string | number;
-  style?: React.CSSProperties;
+  /** Additional CSS styles to apply to the line. The strokeWidth from style is used for line thickness. */
+  style?: CSSProperties;
 };
 
 export default function ShapeLine({ fill, width, height, style }: ShapeShapeLineProps) {

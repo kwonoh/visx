@@ -1,8 +1,7 @@
-import React, { useContext } from 'react';
-import { CommonGridProps } from '@visx/grid/lib/types';
-import { AllGridRowsProps } from '@visx/grid/lib/grids/GridRows';
-import { GridColumnsProps } from '@visx/grid/lib/grids/GridColumns';
-import { AxisScale } from '@visx/axis';
+import { useContext } from 'react';
+import type { FC } from 'react';
+import type { CommonGridProps, AllGridRowsProps, GridColumnsProps } from '@visx/grid';
+import type { AxisScale } from '@visx/axis';
 import DataContext from '../../context/DataContext';
 
 export type BaseGridProps = {
@@ -11,9 +10,9 @@ export type BaseGridProps = {
   /** Whether to render GridColumns. */
   columns?: boolean;
   /** Rendered GridRows component which is passed GridRowProps by BaseGrid. */
-  GridRowsComponent: React.FC<AllGridRowsProps<AxisScale>>;
+  GridRowsComponent: FC<AllGridRowsProps<AxisScale>>;
   /** Rendered GridColumns component which is passed GridColumnsProps by BaseGrid. */
-  GridColumnsComponent: React.FC<GridColumnsProps<AxisScale>>;
+  GridColumnsComponent: FC<GridColumnsProps<AxisScale>>;
 } & CommonGridProps;
 
 /** Component that handles all  */

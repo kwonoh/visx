@@ -1,5 +1,6 @@
-import React, { useContext, useEffect } from 'react';
-import { render } from '@testing-library/react';
+import { vi } from 'vitest';
+import React, { useContext, useEffect, useRef } from 'react';
+import { render, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import {
   AreaStack,
@@ -19,12 +20,11 @@ const providerProps = {
 } as const;
 
 const accessors = {
-  xAccessor: (d: { x?: number }) => d.x,
-  yAccessor: (d: { y?: number }) => d.y,
+  xAccessor: (d: { x?: number }) => d?.x,
+  yAccessor: (d: { y?: number }) => d?.y,
 };
 
 const series1 = {
-  key: 'area1',
   data: [
     { x: 10, y: 5 },
     { x: 7, y: 5 },
@@ -33,7 +33,6 @@ const series1 = {
 };
 
 const series2 = {
-  key: 'area2',
   data: [
     { x: 10, y: 5 },
     { x: 7, y: 20 },
@@ -51,8 +50,8 @@ describe('<AreaStack />', () => {
       <DataProvider {...providerProps}>
         <svg>
           <AreaStack>
-            <AreaSeries dataKey={series1.key} {...series1} />
-            <AreaSeries dataKey={series2.key} {...series2} />
+            <AreaSeries dataKey={'area1'} {...series1} />
+            <AreaSeries dataKey={'area2'} {...series2} />
           </AreaStack>
         </svg>
       </DataProvider>,
@@ -66,8 +65,8 @@ describe('<AreaStack />', () => {
       <DataProvider {...providerProps}>
         <svg>
           <AreaStack renderLine>
-            <AreaSeries dataKey={series1.key} {...series1} />
-            <AreaSeries dataKey={series2.key} {...series2} />
+            <AreaSeries dataKey={'area1'} {...series1} />
+            <AreaSeries dataKey={'area2'} {...series2} />
           </AreaStack>
         </svg>
       </DataProvider>,
@@ -81,7 +80,7 @@ describe('<AreaStack />', () => {
       <DataProvider {...providerProps}>
         <svg>
           <AreaStack onFocus={() => {}}>
-            <AreaSeries dataKey={series1.key} {...series1} />
+            <AreaSeries dataKey={'area1'} {...series1} />
           </AreaStack>
         </svg>
       </DataProvider>,
@@ -90,15 +89,11 @@ describe('<AreaStack />', () => {
     expect(Circles).toHaveLength(series1.data.length);
   });
 
-  it('should update scale domain to include stack sums including negative values', () => {
-    expect.hasAssertions();
+  it('should update scale domain to include stack sums including negative values', async () => {
+    let yScale: any;
 
     function Assertion() {
-      const { yScale } = useContext(DataContext);
-      // eslint-disable-next-line jest/no-if
-      if (yScale) {
-        expect(yScale.domain()).toEqual([-20, 10]);
-      }
+      yScale = useContext(DataContext).yScale;
       return null;
     }
 
@@ -106,9 +101,9 @@ describe('<AreaStack />', () => {
       <DataProvider {...providerProps}>
         <svg>
           <AreaStack>
-            <AreaSeries dataKey={series1.key} {...series1} />
+            <AreaSeries dataKey={'area1'} {...series1} />
             <AreaSeries
-              dataKey={series2.key}
+              dataKey={'area2'}
               {...series2}
               data={[
                 { x: 10, y: 5 },
@@ -120,28 +115,60 @@ describe('<AreaStack />', () => {
         <Assertion />
       </DataProvider>,
     );
+
+    await waitFor(() => {
+      expect(yScale.domain()).toEqual([-20, 10]);
+    });
   });
 
-  it('should invoke showTooltip/hideTooltip on pointermove/pointerout', () => {
+  it('should invoke showTooltip/hideTooltip on pointermove/pointerout', async () => {
     expect.assertions(2);
 
-    const showTooltip = jest.fn();
-    const hideTooltip = jest.fn();
+    const showTooltip = vi.fn();
+    const hideTooltip = vi.fn();
 
     const EventEmitter = () => {
       const emit = useEventEmitter();
       const { yScale } = useContext(DataContext);
+      const hasEmitted = useRef(false);
 
       useEffect(() => {
         // checking for yScale ensures stack data is registered and stacks are rendered
-        if (emit && yScale) {
-          // @ts-expect-error not a React.MouseEvent
-          emit('pointermove', new MouseEvent('pointermove'), XYCHART_EVENT_SOURCE);
-          expect(showTooltip).toHaveBeenCalledTimes(2); // one per key
+        if (emit && yScale && !hasEmitted.current) {
+          hasEmitted.current = true;
 
-          // @ts-expect-error not a React.MouseEvent
-          emit('pointerout', new MouseEvent('pointerout'), XYCHART_EVENT_SOURCE);
-          expect(showTooltip).toHaveBeenCalled();
+          // Get the SVG element to use as event target
+          const svg = document.querySelector('svg');
+
+          // Create PointerEvent with proper target
+          const moveEvent = new PointerEvent('pointermove', {
+            bubbles: true,
+            clientX: 50,
+            clientY: 50,
+          });
+          Object.defineProperty(moveEvent, 'target', {
+            value: svg,
+            enumerable: true,
+          });
+
+          const outEvent = new PointerEvent('pointerout', {
+            bubbles: true,
+          });
+          Object.defineProperty(outEvent, 'target', {
+            value: svg,
+            enumerable: true,
+          });
+
+          emit(
+            'pointermove',
+            moveEvent as unknown as React.PointerEvent<Element>,
+            XYCHART_EVENT_SOURCE,
+          );
+          emit(
+            'pointerout',
+            outEvent as unknown as React.PointerEvent<Element>,
+            XYCHART_EVENT_SOURCE,
+          );
         }
       });
 
@@ -151,13 +178,19 @@ describe('<AreaStack />', () => {
     setupTooltipTest(
       <>
         <AreaStack>
-          <AreaSeries dataKey={series1.key} {...series1} />
-          <AreaSeries dataKey={series2.key} {...series2} />
+          <AreaSeries dataKey={'area1'} {...series1} />
+          <AreaSeries dataKey={'area2'} {...series2} />
         </AreaStack>
         <EventEmitter />
       </>,
       { showTooltip, hideTooltip },
     );
+
+    // Wait for both async event handlers to be called
+    await waitFor(() => {
+      expect(showTooltip).toHaveBeenCalledTimes(2); // one per key
+      expect(hideTooltip).toHaveBeenCalledTimes(1);
+    });
   });
 });
 
@@ -170,8 +203,8 @@ describe('<AnimatedAreaStack />', () => {
       <DataProvider {...providerProps}>
         <svg>
           <AnimatedAreaStack renderLine={false}>
-            <AreaSeries dataKey={series1.key} {...series1} />
-            <AreaSeries dataKey={series2.key} {...series2} />
+            <AreaSeries dataKey={'area1'} {...series1} />
+            <AreaSeries dataKey={'area2'} {...series2} />
           </AnimatedAreaStack>
         </svg>
       </DataProvider>,

@@ -1,12 +1,13 @@
-import React from 'react';
+import type { ReactNode, CSSProperties } from 'react';
 import cx from 'classnames';
-import { AnyD3Scale, ScaleInput } from '@visx/scale';
+import type { AnyD3Scale, ScaleInput } from '@visx/scale';
 import LegendItem from './LegendItem';
-import LegendLabel, { LegendLabelProps } from './LegendLabel';
+import type { LegendLabelProps } from './LegendLabel';
+import LegendLabel from './LegendLabel';
 import LegendShape from './LegendShape';
 import valueOrIdentity, { valueOrIdentityString } from '../../util/valueOrIdentity';
 import labelTransformFactory from '../../util/labelTransformFactory';
-import {
+import type {
   FlexDirection,
   FormattedLabel,
   LabelFormatter,
@@ -16,11 +17,11 @@ import {
 
 export type LegendProps<Scale extends AnyD3Scale> = {
   /** Optional render function override. */
-  children?: (labels: FormattedLabel<ScaleInput<Scale>, ReturnType<Scale>>[]) => React.ReactNode;
+  children?: (labels: FormattedLabel<ScaleInput<Scale>, ReturnType<Scale>>[]) => ReactNode;
   /** Classname to be applied to legend container. */
   className?: string;
   /** Styles to be applied to the legend container. */
-  style?: React.CSSProperties;
+  style?: CSSProperties;
   /** Legend domain. */
   domain?: ScaleInput<Scale>[];
   /** Width of the legend shape. */
@@ -52,7 +53,7 @@ export type LegendProps<Scale extends AnyD3Scale> = {
   /** Legend shape string preset or Element or Component. */
   shape?: LegendShapeType<ScaleInput<Scale>, ReturnType<Scale>>;
   /** Styles applied to legend shapes. */
-  shapeStyle?: (label: FormattedLabel<ScaleInput<Scale>, ReturnType<Scale>>) => React.CSSProperties;
+  shapeStyle?: (label: FormattedLabel<ScaleInput<Scale>, ReturnType<Scale>>) => CSSProperties;
   /** Given a legend item and its index, returns an item label. */
   labelFormat?: LabelFormatter<ScaleInput<Scale>>;
   /** Given the legend scale and labelFormatter, returns a label with datum, index, value, and label. */

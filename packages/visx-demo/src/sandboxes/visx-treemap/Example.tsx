@@ -11,8 +11,9 @@ import {
   treemapSlice,
   treemapSliceDice,
 } from '@visx/hierarchy';
-import { TileMethod } from '@visx/hierarchy/lib/types';
-import shakespeare, { Shakespeare } from '@visx/mock-data/lib/mocks/shakespeare';
+import type { TileMethod } from '@visx/hierarchy';
+import type { Shakespeare } from '@visx/mock-data';
+import { shakespeare } from '@visx/mock-data';
 
 import { scaleLinear } from '@visx/scale';
 

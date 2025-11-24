@@ -10,9 +10,20 @@ module.exports = {
   overrides: [
     {
       files: '*.test.{js,jsx,ts,tsx}',
+      plugins: ['@vitest'],
+      extends: ['plugin:@vitest/legacy-recommended'],
       rules: {
         'import/no-extraneous-dependencies': 'off',
-        'jest/require-to-throw-message': 'off',
+      },
+    },
+    {
+      files: ['**/vitest.config.ts', 'vitest.workspace.ts'],
+      env: {
+        node: true,
+      },
+      rules: {
+        'import/no-unresolved': ['error', { ignore: ['^vitest'] }],
+        'import/no-extraneous-dependencies': 'off',
       },
     },
     {
@@ -42,6 +53,7 @@ module.exports = {
         'react/jsx-sort-props': 'off',
         'react/no-array-index-key': 'off',
         'react/no-children-prop': 'off',
+        'react/react-in-jsx-scope': 'off', // Not needed with automatic JSX transform (React 16.14+)
         'react/require-default-props': 'off',
         'react/sort-comp': 'off',
         'react/sort-prop-types': 'off',

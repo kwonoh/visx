@@ -1,3 +1,4 @@
+// @visx/xychart
 // components
 export { default as Annotation } from './components/annotation/Annotation';
 export { default as AnimatedAnnotation } from './components/annotation/AnimatedAnnotation';
@@ -52,4 +53,4 @@ export { default as buildChartTheme } from './theme/buildChartTheme';
 export { allColors, grayColors, defaultColors } from './theme/colors';
 
 // types
-export * from './types';
+export type * from './types';

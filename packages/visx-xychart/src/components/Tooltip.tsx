@@ -1,17 +1,17 @@
-import React, { useCallback, useContext, useEffect, useRef } from 'react';
+import { useCallback, useContext, useEffect, useRef } from 'react';
+import type { CSSProperties, SVGProps, ReactNode } from 'react';
 import { useTooltipInPortal, defaultStyles } from '@visx/tooltip';
-import { TooltipProps as BaseTooltipProps } from '@visx/tooltip/lib/tooltips/Tooltip';
-import { PickD3Scale } from '@visx/scale';
-import { UseTooltipPortalOptions } from '@visx/tooltip/lib/hooks/useTooltipInPortal';
+import type { TooltipProps as BaseTooltipProps, UseTooltipPortalOptions } from '@visx/tooltip';
+import type { PickD3Scale } from '@visx/scale';
 
 import TooltipContext from '../context/TooltipContext';
 import DataContext from '../context/DataContext';
 import getScaleBandwidth from '../utils/getScaleBandwidth';
 import isValidNumber from '../typeguards/isValidNumber';
-import { GlyphProps as RenderGlyphProps, TooltipContextType } from '../types';
+import type { GlyphProps as RenderGlyphProps, TooltipContextType } from '../types';
 
 /** fontSize + lineHeight from default styles break precise location of crosshair, etc. */
-const TOOLTIP_NO_STYLE: React.CSSProperties = {
+const TOOLTIP_NO_STYLE: CSSProperties = {
   position: 'absolute',
   pointerEvents: 'none',
   fontSize: 0,
@@ -23,7 +23,7 @@ export type RenderTooltipParams<Datum extends object> = TooltipContextType<Datum
 };
 
 export interface RenderTooltipGlyphProps<Datum extends object> extends RenderGlyphProps<Datum> {
-  glyphStyle?: React.SVGProps<SVGCircleElement>;
+  glyphStyle?: SVGProps<SVGCircleElement>;
   isNearestDatum: boolean;
 }
 
@@ -33,9 +33,9 @@ export type TooltipProps<Datum extends object> = {
    * return value is non-null, its content is rendered inside the tooltip container.
    * Content will be rendered in an HTML parent.
    */
-  renderTooltip: (params: RenderTooltipParams<Datum>) => React.ReactNode;
+  renderTooltip: (params: RenderTooltipParams<Datum>) => ReactNode;
   /** Function which handles rendering glyphs. */
-  renderGlyph?: (params: RenderTooltipGlyphProps<Datum>) => React.ReactNode;
+  renderGlyph?: (params: RenderTooltipGlyphProps<Datum>) => ReactNode;
   /** Whether to snap tooltip + crosshair x-coord to the nearest Datum x-coord instead of the event x-coord. */
   snapTooltipToDatumX?: boolean;
   /** Whether to snap tooltip + crosshair y-coord to the nearest Datum y-coord instead of the event y-coord. */
@@ -49,11 +49,11 @@ export type TooltipProps<Datum extends object> = {
   /** Whether to show a glyph for the nearest Datum in each series. */
   showSeriesGlyphs?: boolean;
   /** Optional styles for the vertical crosshair, if visible. */
-  verticalCrosshairStyle?: React.SVGProps<SVGLineElement>;
+  verticalCrosshairStyle?: SVGProps<SVGLineElement>;
   /** Optional styles for the vertical crosshair, if visible. */
-  horizontalCrosshairStyle?: React.SVGProps<SVGLineElement>;
+  horizontalCrosshairStyle?: SVGProps<SVGLineElement>;
   /** Optional styles for the point, if visible. */
-  glyphStyle?: React.SVGProps<SVGCircleElement>;
+  glyphStyle?: SVGProps<SVGCircleElement>;
   /**
    * Tooltip depends on ResizeObserver, which may be polyfilled globally,
    * passed to XYChart, or injected into this component.
@@ -62,7 +62,7 @@ export type TooltipProps<Datum extends object> = {
 } & Omit<BaseTooltipProps, 'left' | 'top' | 'children'> &
   Pick<UseTooltipPortalOptions, 'debounce' | 'detectBounds' | 'scroll' | 'zIndex'>;
 
-const INVISIBLE_STYLES: React.CSSProperties = {
+const INVISIBLE_STYLES: CSSProperties = {
   position: 'absolute',
   left: 0,
   top: 0,
@@ -72,24 +72,33 @@ const INVISIBLE_STYLES: React.CSSProperties = {
   pointerEvents: 'none',
 };
 
-function DefaultGlyph<Datum extends object>(props: RenderTooltipGlyphProps<Datum>) {
+function DefaultGlyph<Datum extends object>({
+  x,
+  y,
+  size,
+  color,
+  glyphStyle,
+}: Omit<RenderTooltipGlyphProps<Datum>, 'key'>) {
   const { theme } = useContext(DataContext) || {};
 
   return (
     <circle
-      cx={props.x}
-      cy={props.y}
-      r={props.size}
-      fill={props.color}
+      cx={x}
+      cy={y}
+      r={size}
+      fill={color}
       stroke={theme?.backgroundColor}
       strokeWidth={1.5}
       paintOrder="fill"
-      {...props.glyphStyle}
+      {...glyphStyle}
     />
   );
 }
 
-function defaultRenderGlyph<Datum extends object>(props: RenderTooltipGlyphProps<Datum>) {
+function defaultRenderGlyph<Datum extends object>({
+  key,
+  ...props
+}: RenderTooltipGlyphProps<Datum>) {
   return <DefaultGlyph {...props} />;
 }
 
@@ -172,13 +181,9 @@ function TooltipInner<Datum extends object>({
       const xAccessor = entry?.xAccessor;
       const yAccessor = entry?.yAccessor;
       const left =
-        xScale && xAccessor
-          ? Number(xScale(xAccessor(datum))) + xScaleBandwidth / 2 ?? 0
-          : undefined;
+        xScale && xAccessor ? Number(xScale(xAccessor(datum))) + xScaleBandwidth / 2 : undefined;
       const top =
-        yScale && yAccessor
-          ? Number(yScale(yAccessor(datum))) + yScaleBandwidth / 2 ?? 0
-          : undefined;
+        yScale && yAccessor ? Number(yScale(yAccessor(datum))) + yScaleBandwidth / 2 : undefined;
       return { left, top };
     },
     [dataRegistry, xScaleBandwidth, yScaleBandwidth, xScale, yScale],
@@ -228,6 +233,7 @@ function TooltipInner<Datum extends object>({
       if (isValidNumber(left) && isValidNumber(top)) {
         const color =
           (nearestDatumKey && colorScale?.(nearestDatumKey)) ??
+          // @ts-expect-error
           null ??
           theme?.gridStyles?.stroke ??
           theme?.htmlLabel?.color ??
@@ -301,10 +307,10 @@ function TooltipInner<Datum extends object>({
               </svg>
             </TooltipInPortal>
           )}
-          {glyphProps.map(({ x, y, ...props }, i) => (
+          {glyphProps.map(({ key, x, y, ...props }) => (
             // We render glyps in a portal so that they can overflow the container if necessary
             <TooltipInPortal
-              key={i}
+              key={key}
               className="visx-tooltip-glyph"
               left={x}
               top={y}
@@ -313,7 +319,7 @@ function TooltipInner<Datum extends object>({
               detectBounds={false}
               style={TOOLTIP_NO_STYLE}
             >
-              <svg overflow="visible">{renderGlyph({ x: 0, y: 0, ...props })}</svg>
+              <svg overflow="visible">{renderGlyph({ key, x: 0, y: 0, ...props })}</svg>
             </TooltipInPortal>
           ))}
           <TooltipInPortal
@@ -322,9 +328,8 @@ function TooltipInner<Datum extends object>({
             style={{
               ...defaultStyles,
               background: theme?.backgroundColor ?? 'white',
-              boxShadow: `0 1px 2px ${
-                theme?.htmlLabel?.color ? `${theme?.htmlLabel?.color}55` : '#22222255'
-              }`,
+              boxShadow: `0 1px 2px 
+                ${theme?.htmlLabel?.color ? `${theme?.htmlLabel?.color}55` : '#22222255'}`,
               ...theme?.htmlLabel,
             }}
             {...tooltipProps}

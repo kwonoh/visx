@@ -1,12 +1,13 @@
+import { vi } from 'vitest';
 import React, { useContext, useEffect } from 'react';
-import { render } from '@testing-library/react';
+import { render, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { AnimatedLineSeries, DataContext, LineSeries, useEventEmitter } from '../../src';
 import getDataContext from '../mocks/getDataContext';
 import setupTooltipTest from '../mocks/setupTooltipTest';
 import { XYCHART_EVENT_SOURCE } from '../../src/constants';
 
-const series = { key: 'line', data: [{}], xAccessor: () => 4, yAccessor: () => 7 };
+const series = { data: [{}], xAccessor: () => 4, yAccessor: () => 7 };
 
 describe('<LineSeries />', () => {
   it('should be defined', () => {
@@ -15,9 +16,9 @@ describe('<LineSeries />', () => {
 
   it('should render a LinePath', () => {
     const { container } = render(
-      <DataContext.Provider value={getDataContext(series)}>
+      <DataContext.Provider value={getDataContext({ key: 'line', ...series })}>
         <svg>
-          <LineSeries dataKey={series.key} {...series} />
+          <LineSeries dataKey={'line'} {...series} />
         </svg>
       </DataContext.Provider>,
     );
@@ -26,9 +27,9 @@ describe('<LineSeries />', () => {
 
   it('should set strokeLinecap="round" to make datum surrounded by nulls visible', () => {
     const { container } = render(
-      <DataContext.Provider value={getDataContext(series)}>
+      <DataContext.Provider value={getDataContext({ key: 'line', ...series })}>
         <svg>
-          <LineSeries dataKey={series.key} {...series} />
+          <LineSeries dataKey={'line'} {...series} />
         </svg>
       </DataContext.Provider>,
     );
@@ -37,33 +38,58 @@ describe('<LineSeries />', () => {
 
   it('should render Glyphs if focus/blur handlers are set', () => {
     const { container } = render(
-      <DataContext.Provider value={getDataContext(series)}>
+      <DataContext.Provider value={getDataContext({ key: 'line', ...series })}>
         <svg>
-          <LineSeries dataKey={series.key} {...series} onFocus={() => {}} />
+          <LineSeries dataKey={'line'} {...series} onFocus={() => {}} />
         </svg>
       </DataContext.Provider>,
     );
     expect(container.querySelectorAll('circle')).toHaveLength(series.data.length);
   });
 
-  it('should invoke showTooltip/hideTooltip on pointermove/pointerout', () => {
+  it('should invoke showTooltip/hideTooltip on pointermove/pointerout', async () => {
     expect.assertions(2);
 
-    const showTooltip = jest.fn();
-    const hideTooltip = jest.fn();
+    const showTooltip = vi.fn();
+    const hideTooltip = vi.fn();
 
     const EventEmitter = () => {
       const emit = useEventEmitter();
 
       useEffect(() => {
         if (emit) {
-          //  not a React.MouseEvent
-          emit('pointermove', new MouseEvent('pointermove'), XYCHART_EVENT_SOURCE);
-          expect(showTooltip).toHaveBeenCalledTimes(1);
+          // Get the SVG element to use as event target
+          const svg = document.querySelector('svg');
 
-          //  not a React.MouseEvent
-          emit('pointerout', new MouseEvent('pointerout'), XYCHART_EVENT_SOURCE);
-          expect(showTooltip).toHaveBeenCalledTimes(1);
+          // Create PointerEvent with proper target
+          const moveEvent = new PointerEvent('pointermove', {
+            bubbles: true,
+            clientX: 50,
+            clientY: 50,
+          });
+          Object.defineProperty(moveEvent, 'target', {
+            value: svg,
+            enumerable: true,
+          });
+
+          const outEvent = new PointerEvent('pointerout', {
+            bubbles: true,
+          });
+          Object.defineProperty(outEvent, 'target', {
+            value: svg,
+            enumerable: true,
+          });
+
+          emit(
+            'pointermove',
+            moveEvent as unknown as React.PointerEvent<Element>,
+            XYCHART_EVENT_SOURCE,
+          );
+          emit(
+            'pointerout',
+            outEvent as unknown as React.PointerEvent<Element>,
+            XYCHART_EVENT_SOURCE,
+          );
         }
       });
 
@@ -74,23 +100,30 @@ describe('<LineSeries />', () => {
       const { dataRegistry } = useContext(DataContext);
       // LineSeries won't render until its data is registered
       // wait for that to emit the events
-      return dataRegistry?.get(series.key) ? <EventEmitter /> : null;
+      return dataRegistry?.get('line') ? <EventEmitter /> : null;
     };
 
     setupTooltipTest(
       <>
-        <LineSeries dataKey={series.key} {...series} />
+        <LineSeries dataKey={'line'} {...series} />
         <ConditionalEventEmitter />
       </>,
       { showTooltip, hideTooltip },
     );
+
+    // Wait for async event handlers to be called
+    await waitFor(() => {
+      expect(showTooltip).toHaveBeenCalledTimes(1);
+    });
+
+    expect(hideTooltip).toHaveBeenCalledTimes(1);
   });
 
   it('should use colorAccessor if passed', () => {
     const { container } = render(
-      <DataContext.Provider value={getDataContext(series)}>
+      <DataContext.Provider value={getDataContext({ key: 'line', ...series })}>
         <svg>
-          <LineSeries dataKey={series.key} {...series} colorAccessor={(_) => 'banana'} />
+          <LineSeries dataKey={'line'} {...series} colorAccessor={(_) => 'banana'} />
         </svg>
       </DataContext.Provider>,
     );
@@ -104,9 +137,9 @@ describe('<AnimatedLineSeries />', () => {
   });
   it('should render an animated.path', () => {
     const { container } = render(
-      <DataContext.Provider value={getDataContext(series)}>
+      <DataContext.Provider value={getDataContext({ key: 'line', ...series })}>
         <svg>
-          <AnimatedLineSeries dataKey={series.key} {...series} />
+          <AnimatedLineSeries dataKey={'line'} {...series} />
         </svg>
       </DataContext.Provider>,
     );

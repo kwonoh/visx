@@ -1,9 +1,9 @@
-import React from 'react';
+import type { ReactNode } from 'react';
 import cx from 'classnames';
 import { Group } from '@visx/group';
-import { ScaleInput } from '@visx/scale';
+import type { ScaleInput } from '@visx/scale';
 import Bar from './Bar';
-import {
+import type {
   PositionScale,
   AnyScaleBand,
   DatumObject,
@@ -34,7 +34,7 @@ export type BarGroupHorizontalProps<
   /** Total width of the x-axis. */
   width: number;
   /** Override render function which is passed the computed Ba/rGroups. */
-  children?: (barGroups: BarGroupHorizontalType<Key>[]) => React.ReactNode;
+  children?: (barGroups: BarGroupHorizontalType<Key>[]) => ReactNode;
 };
 
 export default function BarGroupHorizontal<

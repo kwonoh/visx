@@ -1,11 +1,10 @@
-import React from 'react';
 import cx from 'classnames';
 import { Line } from '@visx/shape';
 import { Group } from '@visx/group';
 import { Text } from '@visx/text';
 
 import Orientation from '../constants/orientation';
-import { TicksRendererProps, AxisScale } from '../types';
+import type { TicksRendererProps, AxisScale } from '../types';
 
 export default function Ticks<Scale extends AxisScale>({
   hideTicks,

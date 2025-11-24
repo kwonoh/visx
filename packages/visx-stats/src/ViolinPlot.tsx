@@ -1,8 +1,9 @@
-import React from 'react';
+import type { ReactNode, SVGProps } from 'react';
 import cx from 'classnames';
-import { scaleLinear, PickD3Scale, ContinuousDomainScaleType } from '@visx/scale';
-import { line, curveCardinal } from 'd3-shape';
-import { SharedProps } from './types';
+import type { PickD3Scale, ContinuousDomainScaleType } from '@visx/scale';
+import { scaleLinear } from '@visx/scale';
+import { line, curveCardinal } from '@visx/vendor/d3-shape';
+import type { SharedProps } from './types';
 
 export type ViolinPlotProps<Datum extends object> = SharedProps & {
   /** Scale for converting values to pixel offsets. */
@@ -16,7 +17,7 @@ export type ViolinPlotProps<Datum extends object> = SharedProps & {
   /** Width of the violin plot glyph. */
   width?: number;
   /** Override render function to fully control the rendering of the ViolinPlot glyph. */
-  children?: (providedProps: { path: string }) => React.ReactNode;
+  children?: (providedProps: { path: string }) => ReactNode;
 };
 
 const defaultCountAccessor = (d: { count?: unknown }) =>
@@ -36,7 +37,7 @@ export default function ViolinPlot<Datum extends object>({
   horizontal,
   children,
   ...restProps
-}: ViolinPlotProps<Datum> & Omit<React.SVGProps<SVGPathElement>, keyof ViolinPlotProps<Datum>>) {
+}: ViolinPlotProps<Datum> & Omit<SVGProps<SVGPathElement>, keyof ViolinPlotProps<Datum>>) {
   const center = (horizontal ? top : left) + width / 2;
   const binCounts = data.map((bin) => count(bin));
   const widthScale = scaleLinear<number>({

@@ -1,9 +1,12 @@
+import { vi } from 'vitest';
 import React from 'react';
 import { render } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
 import { scaleBand, scaleLinear } from '@visx/scale';
 import { Axis } from '../src';
+import type { AxisRendererProps } from '../src';
+import { addMock, removeMock } from './svgMock';
 
 const axisProps = {
   orientation: 'left' as const,
@@ -17,8 +20,10 @@ const axisProps = {
 
 describe('<Axis />', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
+    addMock();
   });
+  afterEach(removeMock);
 
   it('should be defined', () => {
     expect(Axis).toBeDefined();
@@ -35,14 +40,15 @@ describe('<Axis />', () => {
   });
 
   it('should call children function with required args', () => {
-    const mockFn = jest.fn(() => null);
+    // eslint-disable-next-line
+    const mockFn = vi.fn(({ }) => null);
     render(
       <svg>
         <Axis {...axisProps}>{mockFn}</Axis>
       </svg>,
     );
 
-    const args = mockFn.mock.calls[0][0];
+    const args = mockFn.mock.calls[0][0] as AxisRendererProps<typeof axisProps.scale>;
     expect(args.axisFromPoint).toBeDefined();
     expect(args.axisToPoint).toBeDefined();
     expect(args.horizontal).toBeDefined();
@@ -91,7 +97,8 @@ describe('<Axis />', () => {
   });
 
   it('should call the tickLabelProps func with correct signature', () => {
-    const tickLabelPropsSpy = jest.fn(() => ({}));
+    // eslint-disable-next-line
+    const tickLabelPropsSpy = vi.fn(({ }, { }, { }) => ({}));
     render(
       <svg>
         <Axis {...axisProps} tickLabelProps={tickLabelPropsSpy} />

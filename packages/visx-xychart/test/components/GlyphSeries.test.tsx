@@ -1,14 +1,14 @@
+import { vi } from 'vitest';
 import React, { useContext, useEffect } from 'react';
-import { render } from '@testing-library/react';
+import { render, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { AnimatedGlyphSeries, DataContext, GlyphSeries, useEventEmitter } from '../../src';
 import getDataContext from '../mocks/getDataContext';
 import setupTooltipTest from '../mocks/setupTooltipTest';
 import { XYCHART_EVENT_SOURCE } from '../../src/constants';
 
-const series = { key: 'glyph', data: [{}, {}], xAccessor: () => 4, yAccessor: () => 7 };
+const series = { data: [{}, {}], xAccessor: () => 4, yAccessor: () => 7 };
 const seriesMissingData = {
-  key: 'barMissingData',
   data: [{ x: 1 }, { x: 0, y: 3 }, { y: 2 }],
   xAccessor: (d: { x?: number }) => d.x,
   yAccessor: (d: { y?: number }) => d.y,
@@ -21,9 +21,9 @@ describe('<GlyphSeries />', () => {
 
   it('should render a DefaultGlyph for each Datum', () => {
     const { container } = render(
-      <DataContext.Provider value={getDataContext(series)}>
+      <DataContext.Provider value={getDataContext({ key: 'glyph', ...series })}>
         <svg>
-          <GlyphSeries dataKey={series.key} {...series} />
+          <GlyphSeries dataKey={'glyph'} {...series} />
         </svg>
       </DataContext.Provider>,
     );
@@ -32,10 +32,10 @@ describe('<GlyphSeries />', () => {
 
   it('should use colorAccessor if passed', () => {
     const { container } = render(
-      <DataContext.Provider value={getDataContext(series)}>
+      <DataContext.Provider value={getDataContext({ key: 'glyph', ...series })}>
         <svg>
           <GlyphSeries
-            dataKey={series.key}
+            dataKey={'glyph'}
             {...series}
             colorAccessor={(_, i) => (i === 0 ? 'banana' : null)}
           />
@@ -49,9 +49,9 @@ describe('<GlyphSeries />', () => {
 
   it('should not render Glyphs if x or y is invalid', () => {
     const { container } = render(
-      <DataContext.Provider value={getDataContext(seriesMissingData)}>
+      <DataContext.Provider value={getDataContext({ key: 'barMissingData', ...seriesMissingData })}>
         <svg>
-          <GlyphSeries dataKey={seriesMissingData.key} {...seriesMissingData} />
+          <GlyphSeries dataKey={'barMissingData'} {...seriesMissingData} />
         </svg>
       </DataContext.Provider>,
     );
@@ -61,33 +61,58 @@ describe('<GlyphSeries />', () => {
   it('should render a custom Glyph for each Datum', () => {
     const customRenderGlyph = () => <rect className="custom-glyph" />;
     const { container } = render(
-      <DataContext.Provider value={getDataContext(series)}>
+      <DataContext.Provider value={getDataContext({ key: 'glyph', ...series })}>
         <svg>
-          <GlyphSeries dataKey={series.key} {...series} renderGlyph={customRenderGlyph} />
+          <GlyphSeries dataKey={'glyph'} {...series} renderGlyph={customRenderGlyph} />
         </svg>
       </DataContext.Provider>,
     );
     expect(container.querySelectorAll('.custom-glyph')).toHaveLength(series.data.length);
   });
 
-  it('should invoke showTooltip/hideTooltip on pointermove/pointerout', () => {
+  it('should invoke showTooltip/hideTooltip on pointermove/pointerout', async () => {
     expect.assertions(2);
 
-    const showTooltip = jest.fn();
-    const hideTooltip = jest.fn();
+    const showTooltip = vi.fn();
+    const hideTooltip = vi.fn();
 
     const EventEmitter = () => {
       const emit = useEventEmitter();
 
       useEffect(() => {
         if (emit) {
-          //  not a React.MouseEvent
-          emit('pointermove', new MouseEvent('pointermove'), XYCHART_EVENT_SOURCE);
-          expect(showTooltip).toHaveBeenCalledTimes(1);
+          // Get the SVG element to use as event target
+          const svg = document.querySelector('svg');
 
-          //  not a React.MouseEvent
-          emit('pointerout', new MouseEvent('pointerout'), XYCHART_EVENT_SOURCE);
-          expect(showTooltip).toHaveBeenCalledTimes(1);
+          // Create PointerEvent with proper target
+          const moveEvent = new PointerEvent('pointermove', {
+            bubbles: true,
+            clientX: 50,
+            clientY: 50,
+          });
+          Object.defineProperty(moveEvent, 'target', {
+            value: svg,
+            enumerable: true,
+          });
+
+          const outEvent = new PointerEvent('pointerout', {
+            bubbles: true,
+          });
+          Object.defineProperty(outEvent, 'target', {
+            value: svg,
+            enumerable: true,
+          });
+
+          emit(
+            'pointermove',
+            moveEvent as unknown as React.PointerEvent<Element>,
+            XYCHART_EVENT_SOURCE,
+          );
+          emit(
+            'pointerout',
+            outEvent as unknown as React.PointerEvent<Element>,
+            XYCHART_EVENT_SOURCE,
+          );
         }
       });
 
@@ -98,16 +123,23 @@ describe('<GlyphSeries />', () => {
       const { dataRegistry } = useContext(DataContext);
       // GlyphSeries won't render until its data is registered
       // wait for that to emit the events
-      return dataRegistry?.get(series.key) ? <EventEmitter /> : null;
+      return dataRegistry?.get('glyph') ? <EventEmitter /> : null;
     };
 
     setupTooltipTest(
       <>
-        <GlyphSeries dataKey={series.key} {...series} />
+        <GlyphSeries dataKey={'glyph'} {...series} />
         <ConditionalEventEmitter />
       </>,
       { showTooltip, hideTooltip },
     );
+
+    // Wait for async event handlers to be called
+    await waitFor(() => {
+      expect(showTooltip).toHaveBeenCalledTimes(1);
+    });
+
+    expect(hideTooltip).toHaveBeenCalledTimes(1);
   });
 });
 
@@ -117,9 +149,9 @@ describe('<AnimatedGlyphSeries />', () => {
   });
   it('should render an animated.g for each datum', () => {
     const { container } = render(
-      <DataContext.Provider value={getDataContext(series)}>
+      <DataContext.Provider value={getDataContext({ key: 'glyph', ...series })}>
         <svg>
-          <AnimatedGlyphSeries dataKey={series.key} {...series} />
+          <AnimatedGlyphSeries dataKey={'glyph'} {...series} />
         </svg>
       </DataContext.Provider>,
     );

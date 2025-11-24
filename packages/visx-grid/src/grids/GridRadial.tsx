@@ -1,10 +1,12 @@
-import React from 'react';
+import type { ReactNode, SVGProps } from 'react';
 import cx from 'classnames';
-import Arc, { ArcProps } from '@visx/shape/lib/shapes/Arc';
+import { Arc } from '@visx/shape';
+import type { ArcProps } from '@visx/shape';
 import { Group } from '@visx/group';
-import { ScaleInput, getTicks } from '@visx/scale';
+import type { ScaleInput } from '@visx/scale';
+import { getTicks } from '@visx/scale';
 
-import { CommonGridProps, GridScale } from '../types';
+import type { CommonGridProps, GridScale } from '../types';
 
 export type GridRadialProps<Scale extends GridScale> = CommonGridProps & {
   /** `@visx/scale` or `d3-scale` object used to convert value to position. */
@@ -41,12 +43,12 @@ export type GridRadialProps<Scale extends GridScale> = CommonGridProps & {
   /**
    * Child components to the Arc.
    */
-  children?: () => React.ReactNode;
+  children?: () => ReactNode;
 };
 
 export type AllGridRadialProps<Scale extends GridScale, Datum> = GridRadialProps<Scale> &
   Omit<
-    ArcProps<Datum> & Omit<React.SVGProps<SVGPathElement>, keyof ArcProps<Datum>>,
+    ArcProps<Datum> & Omit<SVGProps<SVGPathElement>, keyof ArcProps<Datum>>,
     keyof GridRadialProps<Scale>
   >;
 

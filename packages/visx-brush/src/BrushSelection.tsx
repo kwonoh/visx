@@ -1,14 +1,16 @@
 /* eslint react/jsx-handler-names: 0 */
-import React from 'react';
-import Drag, { HandlerArgs as DragArgs } from '@visx/drag/lib/Drag';
+import { Component } from 'react';
+import type { SVGProps, PointerEvent } from 'react';
+import type { HandlerArgs as DragArgs } from '@visx/drag';
+import { Drag } from '@visx/drag';
 
-import { BaseBrushState as BrushState, UpdateBrush } from './BaseBrush';
-import { BrushPageOffset, BrushingType } from './types';
+import type { BaseBrushState as BrushState, UpdateBrush } from './BaseBrush';
+import type { BrushPageOffset, BrushingType } from './types';
 import { getPageCoordinates } from './utils';
 
 const DRAGGING_OVERLAY_STYLES = { cursor: 'move' };
 
-type PointerHandler = (event: React.PointerEvent<SVGRectElement>) => void;
+type PointerHandler = (event: PointerEvent<SVGRectElement>) => void;
 
 export type BrushSelectionProps = {
   width: number;
@@ -25,13 +27,13 @@ export type BrushSelectionProps = {
   onMouseMove: PointerHandler;
   onMouseUp: PointerHandler;
   onClick: PointerHandler;
-  selectedBoxStyle: React.SVGProps<SVGRectElement>;
+  selectedBoxStyle: SVGProps<SVGRectElement>;
   isControlled?: boolean;
   isDragInProgress?: boolean;
 };
 
-export default class BrushSelection extends React.Component<
-  BrushSelectionProps & Omit<React.SVGProps<SVGRectElement>, keyof BrushSelectionProps>
+export default class BrushSelection extends Component<
+  BrushSelectionProps & Omit<SVGProps<SVGRectElement>, keyof BrushSelectionProps>
 > {
   static defaultProps = {
     onMouseLeave: null,
@@ -175,7 +177,7 @@ export default class BrushSelection extends React.Component<
                 if (onMouseUp) onMouseUp(event);
               }}
               onClick={(event) => {
-                if (onClick) onClick(event as React.PointerEvent<SVGRectElement>);
+                if (onClick) onClick(event as PointerEvent<SVGRectElement>);
               }}
               style={{
                 pointerEvents: brush.isBrushing || brush.activeHandle ? 'none' : 'all',

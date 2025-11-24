@@ -1,11 +1,12 @@
-import React from 'react';
+import type { ReactNode, SVGProps } from 'react';
 import cx from 'classnames';
-import { Symbol, symbol, symbolWye } from 'd3-shape';
+import type { Symbol } from '@visx/vendor/d3-shape';
+import { symbol, symbolWye } from '@visx/vendor/d3-shape';
 import Glyph from './Glyph';
 
 export type GlyphWyeProps<Datum> = {
   /** Render function override which is passed the configured path generator. */
-  children?: ({ path }: { path: Symbol<unknown, Datum> }) => React.ReactNode;
+  children?: ({ path }: { path: Symbol<unknown, Datum> }) => ReactNode;
   /** classname to apply to glyph path element. */
   className?: string;
   /** Top offset to apply to glyph g element container. */
@@ -23,7 +24,7 @@ export default function GlyphWye<Datum = unknown>({
   left,
   size,
   ...restProps
-}: GlyphWyeProps<Datum> & Omit<React.SVGProps<SVGPathElement>, keyof GlyphWyeProps<Datum>>) {
+}: GlyphWyeProps<Datum> & Omit<SVGProps<SVGPathElement>, keyof GlyphWyeProps<Datum>>) {
   const path = symbol<Datum>();
   path.type(symbolWye);
 

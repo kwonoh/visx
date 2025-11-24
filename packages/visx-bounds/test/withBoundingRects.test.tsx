@@ -1,6 +1,8 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
-import React, { ReactNode } from 'react';
+import { vi } from 'vitest';
+import type { ReactNode } from 'react';
+import React from 'react';
 import { render, waitFor } from '@testing-library/react';
 import fireEvent from '@testing-library/user-event';
 import { withBoundingRects } from '../src';
@@ -34,6 +36,7 @@ type BoundingRectsComponentProps = {
   parentRect?: RectShape;
   getRects?: () => DOMRect;
   children?: ReactNode;
+  nodeRef?: React.RefObject<HTMLDivElement>;
   otherProps?: object;
 };
 
@@ -43,6 +46,7 @@ function BoundingRectsComponent({
   parentRect,
   getRects,
   children,
+  nodeRef,
   ...otherProps
 }: BoundingRectsComponentProps) {
   const parentRectStyle = {
@@ -61,7 +65,12 @@ function BoundingRectsComponent({
 
   return (
     <div data-testid="BoundingRectsComponentParent" style={parentRectStyle}>
-      <div data-testid="BoundingRectsComponent" style={rectStyle} onClick={() => getRects?.()}>
+      <div
+        ref={nodeRef}
+        data-testid="BoundingRectsComponent"
+        style={rectStyle}
+        onClick={() => getRects?.()}
+      >
         {children}
         {JSON.stringify(otherProps)}
       </div>
@@ -74,13 +83,13 @@ const Component = () => null;
 describe('withBoundingRects()', () => {
   beforeAll(() => {
     // mock getBoundingClientRect
-    jest.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(() => ({
+    vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(() => ({
       ...mockRect,
       x: 0,
       y: 0,
       width: 100,
       height: 100,
-      toJSON: jest.fn(),
+      toJSON: vi.fn(),
     }));
   });
 

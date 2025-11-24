@@ -1,6 +1,6 @@
-import React from 'react';
-import { PositionScale } from '@visx/shape/lib/types';
-import BaseBarStack, { BaseBarStackProps } from './private/BaseBarStack';
+import type { PositionScale } from '@visx/shape';
+import type { BaseBarStackProps } from './private/BaseBarStack';
+import BaseBarStack from './private/BaseBarStack';
 import Bars from './private/Bars';
 
 export default function BarStack<

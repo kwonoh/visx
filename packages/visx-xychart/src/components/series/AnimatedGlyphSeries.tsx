@@ -1,8 +1,10 @@
-import { AxisScale } from '@visx/axis';
-import React, { useCallback } from 'react';
-import { GlyphProps, GlyphsProps } from '../../types';
+import type { AxisScale } from '@visx/axis';
+import { useCallback } from 'react';
+import type { FC } from 'react';
+import type { GlyphProps, GlyphsProps } from '../../types';
 import AnimatedGlyphs from './private/AnimatedGlyphs';
-import BaseGlyphSeries, { BaseGlyphSeriesProps } from './private/BaseGlyphSeries';
+import type { BaseGlyphSeriesProps } from './private/BaseGlyphSeries';
+import BaseGlyphSeries from './private/BaseGlyphSeries';
 import defaultRenderGlyph from './private/defaultRenderGlyph';
 
 export default function AnimatedGlyphSeries<
@@ -13,7 +15,7 @@ export default function AnimatedGlyphSeries<
   renderGlyph = defaultRenderGlyph,
   ...props
 }: Omit<BaseGlyphSeriesProps<XScale, YScale, Datum>, 'renderGlyphs'> & {
-  renderGlyph?: React.FC<GlyphProps<Datum>>;
+  renderGlyph?: FC<GlyphProps<Datum>>;
 }) {
   const renderGlyphs = useCallback(
     (glyphsProps: GlyphsProps<XScale, YScale, Datum>) => (
@@ -22,13 +24,5 @@ export default function AnimatedGlyphSeries<
     [renderGlyph],
   );
 
-  return (
-    <BaseGlyphSeries<XScale, YScale, Datum>
-      {...props}
-      // @TODO currently generics for non-SeriesProps are not passed correctly in
-      // withRegisteredData HOC
-      // @ts-expect-error
-      renderGlyphs={renderGlyphs}
-    />
-  );
+  return <BaseGlyphSeries<XScale, YScale, Datum> {...props} renderGlyphs={renderGlyphs} />;
 }

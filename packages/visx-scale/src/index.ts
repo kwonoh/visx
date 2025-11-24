@@ -1,3 +1,4 @@
+// @visx/scale
 export { default as scaleBand } from './scales/band';
 export { default as scalePoint } from './scales/point';
 export { default as scaleLinear } from './scales/linear';
@@ -23,8 +24,8 @@ export { default as toString } from './utils/toString';
 export { default as scaleCanBeZeroed } from './utils/scaleCanBeZeroed';
 
 // export types
-export * from './types/Base';
-export * from './types/Nice';
-export * from './types/Scale';
-export * from './types/ScaleConfig';
-export * from './types/ScaleInterpolate';
+export type * from './types/Base';
+export type * from './types/Nice';
+export type * from './types/Scale';
+export type * from './types/ScaleConfig';
+export type * from './types/ScaleInterpolate';

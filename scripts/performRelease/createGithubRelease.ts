@@ -1,6 +1,6 @@
-import { GithubClient } from '../utils/getGitHubClient';
+import type { GithubClient } from '../utils/getGitHubClient';
 import getChangelogAddition from './updateChangelog/getChangelogAddition';
-import { PR } from './types';
+import type { PR } from './types';
 import getRepoContext from '../utils/getRepoContext';
 
 /**
@@ -34,6 +34,12 @@ export default async function createGithubRelease(
     });
   } catch (error) {
     console.log(`Could not post new Github release. Aborting.`);
-    console.warn(error.message); // log but don't fail the job
+    const message =
+      error instanceof Error
+        ? error.message
+        : typeof error === 'string'
+        ? error
+        : JSON.stringify(error);
+    console.warn(message); // log but don't fail the job
   }
 }

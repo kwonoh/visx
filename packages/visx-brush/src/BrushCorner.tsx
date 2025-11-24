@@ -1,8 +1,10 @@
 /* eslint react/jsx-handler-names: 0 */
-import React from 'react';
-import Drag, { HandlerArgs as DragArgs } from '@visx/drag/lib/Drag';
-import { BaseBrushState as BrushState, UpdateBrush } from './BaseBrush';
-import { ResizeTriggerAreas } from './types';
+import { Component } from 'react';
+import type { CSSProperties } from 'react';
+import type { HandlerArgs as DragArgs } from '@visx/drag';
+import { Drag } from '@visx/drag';
+import type { BaseBrushState as BrushState, UpdateBrush } from './BaseBrush';
+import type { ResizeTriggerAreas } from './types';
 
 export type BrushCornerProps = {
   stageWidth: number;
@@ -11,13 +13,13 @@ export type BrushCornerProps = {
   updateBrush: (update: UpdateBrush) => void;
   onBrushEnd?: (brush: BrushState) => void;
   type: ResizeTriggerAreas;
-  style?: React.CSSProperties;
+  style?: CSSProperties;
   corner: { x: number; y: number; width: number; height: number };
 };
 
 export type BrushCornerState = {};
 
-export default class BrushCorner extends React.Component<BrushCornerProps, BrushCornerState> {
+export default class BrushCorner extends Component<BrushCornerProps, BrushCornerState> {
   static defaultProps = {
     style: {},
   };
@@ -96,6 +98,11 @@ export default class BrushCorner extends React.Component<BrushCornerProps, Brush
               y1: Math.min(Math.max(moveY, start.y), prevBrush.bounds.y1),
             },
           };
+        // BrushCorner skips edges use BrushHandle for those
+        case 'top':
+        case 'right':
+        case 'bottom':
+        case 'left':
         default:
           return prevBrush;
       }

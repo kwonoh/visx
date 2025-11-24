@@ -1,8 +1,8 @@
-import React, { useContext, useMemo } from 'react';
-import { AxisScale } from '@visx/axis';
+import { useContext, useEffect, useMemo } from 'react';
+import type { ReactNode } from 'react';
+import type { AxisScale } from '@visx/axis';
 import DataContext from '../../../context/DataContext';
-import { GlyphProps, GlyphsProps, SeriesProps } from '../../../types';
-import withRegisteredData, { WithRegisteredDataProps } from '../../../enhancers/withRegisteredData';
+import type { DataContextType, GlyphProps, GlyphsProps, SeriesProps } from '../../../types';
 import getScaledValueFactory from '../../../utils/getScaledValueFactory';
 import isValidNumber from '../../../typeguards/isValidNumber';
 import { GLYPHSERIES_EVENT_SOURCE, XYCHART_EVENT_SOURCE } from '../../../constants';
@@ -18,7 +18,7 @@ export type BaseGlyphSeriesProps<
   /** The size of a `Glyph`, a `number` or a function which takes a `Datum` and returns a `number`. */
   size?: number | ((d: Datum) => number);
   /** Function which handles rendering glyphs. */
-  renderGlyphs: (glyphsProps: GlyphsProps<XScale, YScale, Datum>) => React.ReactNode;
+  renderGlyphs: (glyphsProps: GlyphsProps<XScale, YScale, Datum>) => ReactNode;
 };
 
 export function BaseGlyphSeries<
@@ -42,7 +42,8 @@ export function BaseGlyphSeries<
   xScale,
   yAccessor,
   yScale,
-}: BaseGlyphSeriesProps<XScale, YScale, Datum> & WithRegisteredDataProps<XScale, YScale, Datum>) {
+}: BaseGlyphSeriesProps<XScale, YScale, Datum> &
+  Pick<DataContextType<XScale, YScale, Datum>, 'xScale' | 'yScale'>) {
   const { colorScale, theme, horizontal } = useContext(DataContext);
   const getScaledX = useMemo(() => getScaledValueFactory(xScale, xAccessor), [xScale, xAccessor]);
   const getScaledY = useMemo(() => getScaledValueFactory(yScale, yAccessor), [yScale, yAccessor]);
@@ -86,4 +87,37 @@ export function BaseGlyphSeries<
   return <>{renderGlyphs({ glyphs, xScale, yScale, horizontal, ...eventEmitters })}</>;
 }
 
-export default withRegisteredData(BaseGlyphSeries);
+export default function BaseGlyphSeriesWithRegisteredData<
+  XScale extends AxisScale,
+  YScale extends AxisScale,
+  Datum extends object,
+>(props: BaseGlyphSeriesProps<XScale, YScale, Datum>) {
+  const { dataKey, data, xAccessor, yAccessor } = props;
+  const { xScale, yScale, dataRegistry } = useContext(DataContext) as unknown as DataContextType<
+    XScale,
+    YScale,
+    Datum
+  >;
+
+  useEffect(() => {
+    if (dataRegistry) dataRegistry.registerData({ key: dataKey, data, xAccessor, yAccessor });
+    return () => dataRegistry?.unregisterData(dataKey);
+  }, [dataRegistry, dataKey, data, xAccessor, yAccessor]);
+
+  const registryEntry = dataRegistry?.get(dataKey);
+
+  // if scales or data are not available in context, render nothing
+  if (!xScale || !yScale || !registryEntry) return null;
+
+  // otherwise pass props + over-write data/accessors
+  return (
+    <BaseGlyphSeries
+      {...props}
+      xScale={xScale}
+      yScale={yScale}
+      data={registryEntry.data}
+      xAccessor={registryEntry.xAccessor}
+      yAccessor={registryEntry.yAccessor}
+    />
+  );
+}

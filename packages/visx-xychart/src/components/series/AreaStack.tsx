@@ -1,6 +1,6 @@
-import React from 'react';
-import { AxisScale } from '@visx/axis/lib/types';
-import BaseAreaStack, { BaseAreaStackProps } from './private/BaseAreaStack';
+import type { AxisScale } from '@visx/axis';
+import type { BaseAreaStackProps } from './private/BaseAreaStack';
+import BaseAreaStack from './private/BaseAreaStack';
 
 export default function AreaStack<
   XScale extends AxisScale,

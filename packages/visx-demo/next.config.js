@@ -1,51 +1,57 @@
-/* eslint-disable no-undef */
-const path = require('path');
-
-const isProd = process.env.NODE_ENV === 'production';
-
 const nextConfig = {
-  basePath: isProd ? '/visx' : '',
-  assetPrefix: isProd ? '/visx/' : '',
+  output: 'export',
   typescript: {
     // enable rendering when there are type errors
-    ignoreDevErrors: true,
     ignoreBuildErrors: true,
   },
-  experimental: {
-    // note: this can be removed in future next versions
-    esmExternals: 'loose',
+  eslint: {
+    // Don't run ESLint during builds (it's run at the root level)
+    ignoreDuringBuilds: true,
   },
-  webpack: (config) => {
-    // add visx-*/src/* to be parsed by babel
-    // note: the location of this rule depends/breaks based on our nextjs version
-    // and/or next config itself (e.g., experimental flag)
-    const babelConfig = config.module.rules[1];
-    babelConfig.include.push(/visx-.*\/src/);
-
-    config.module.rules.push({
-      test: /\.tsx?$/,
-      use: [
-        {
-          loader: 'react-docgen-typescript-loader',
-          options: {
-            // display types from outside a component's source even tho
-            // we hide these with the propFilter below, if we don't do
-            // this the component's own props become `any`
-            tsconfigPath: path.resolve(__dirname, './tsconfig.json'),
-            // filter props like React.HTMLProps/React.SVGProps
-            propFilter(prop) {
-              if (prop.parent) {
-                return !prop.parent.fileName.includes('node_modules');
-              }
-              return true;
-            },
-          },
-        },
-      ],
-    });
-
-    return config;
-  },
+  // Transpile visx packages during production builds.
+  // TypeScript project references cause Next.js webpack to resolve to source files,
+  // so we need to transpile them with SWC (same as dev mode does automatically).
+  transpilePackages: [
+    '@visx/annotation',
+    '@visx/axis',
+    '@visx/bounds',
+    '@visx/brush',
+    '@visx/chord',
+    '@visx/clip-path',
+    '@visx/curve',
+    '@visx/delaunay',
+    '@visx/drag',
+    '@visx/event',
+    '@visx/geo',
+    '@visx/glyph',
+    '@visx/gradient',
+    '@visx/grid',
+    '@visx/group',
+    '@visx/heatmap',
+    '@visx/hierarchy',
+    '@visx/legend',
+    '@visx/marker',
+    '@visx/mock-data',
+    '@visx/network',
+    '@visx/pattern',
+    '@visx/point',
+    '@visx/react-spring',
+    '@visx/responsive',
+    '@visx/sankey',
+    '@visx/scale',
+    '@visx/shape',
+    '@visx/stats',
+    '@visx/text',
+    '@visx/threshold',
+    '@visx/tooltip',
+    '@visx/vendor',
+    '@visx/visx',
+    '@visx/voronoi',
+    '@visx/wordcloud',
+    '@visx/xychart',
+    '@visx/zoom',
+  ],
 };
 
+// eslint-disable-next-line no-undef
 module.exports = nextConfig;

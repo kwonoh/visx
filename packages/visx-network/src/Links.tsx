@@ -1,15 +1,16 @@
-import React from 'react';
+import { createElement } from 'react';
+import type { FunctionComponent, ComponentClass } from 'react';
 import cx from 'classnames';
 import { Group } from '@visx/group';
-import { LinkProvidedProps } from './types';
+import type { LinkProvidedProps } from './types';
 
 export type LinkProps<Link> = {
   /** Array of links to render. */
   links?: Link[];
   /** Component for rendering a single link. */
   linkComponent:
-    | React.FunctionComponent<LinkProvidedProps<Link>>
-    | React.ComponentClass<LinkProvidedProps<Link>>;
+    | FunctionComponent<LinkProvidedProps<Link>>
+    | ComponentClass<LinkProvidedProps<Link>>;
   /** Classname to add to each link parent g element. */
   className?: string;
 };
@@ -19,7 +20,7 @@ export default function Links<Link>({ links = [], linkComponent, className }: Li
     <>
       {links.map((link, i) => (
         <Group key={`network-link-${i}`} className={cx('visx-network-link', className)}>
-          {React.createElement(linkComponent, { link })}
+          {createElement(linkComponent, { link })}
         </Group>
       ))}
     </>

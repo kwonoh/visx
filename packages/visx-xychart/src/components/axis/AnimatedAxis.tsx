@@ -1,8 +1,8 @@
-import React from 'react';
-import { AxisScale } from '@visx/axis/lib/types';
-import VxAnimatedAxis from '@visx/react-spring/lib/axis/AnimatedAxis';
-import { AnimationTrajectory } from '@visx/react-spring/lib/types';
-import BaseAxis, { BaseAxisProps } from './BaseAxis';
+import type { AxisScale } from '@visx/axis';
+import { AnimatedAxis as VxAnimatedAxis } from '@visx/react-spring';
+import type { AnimationTrajectory } from '@visx/react-spring';
+import type { BaseAxisProps } from './BaseAxis';
+import BaseAxis from './BaseAxis';
 
 export type AnimatedAxisProps<Scale extends AxisScale> = Omit<
   BaseAxisProps<Scale>,

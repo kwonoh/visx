@@ -1,9 +1,9 @@
-import React from 'react';
+import type { ReactNode } from 'react';
 import cx from 'classnames';
 import { Group } from '@visx/group';
-import { ScaleInput } from '@visx/scale';
+import type { ScaleInput } from '@visx/scale';
 import Bar from './Bar';
-import {
+import type {
   PositionScale,
   DatumObject,
   AnyScaleBand,
@@ -32,7 +32,7 @@ export type BarGroupProps<
   /** Total height of the y-axis. */
   height: number;
   /** Override render function which is passed the computed BarGroups. */
-  children?: (barGroups: BarGroupType<Key>[]) => React.ReactNode;
+  children?: (barGroups: BarGroupType<Key>[]) => ReactNode;
 };
 
 /**

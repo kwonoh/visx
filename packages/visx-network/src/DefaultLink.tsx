@@ -1,5 +1,4 @@
-import React from 'react';
-import { LinkProvidedProps } from './types';
+import type { LinkProvidedProps } from './types';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function DefaultLink({ link }: LinkProvidedProps<any>) {

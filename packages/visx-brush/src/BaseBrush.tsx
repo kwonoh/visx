@@ -1,12 +1,15 @@
-import React from 'react';
+import { Component } from 'react';
+import type { PointerEvent, SVGProps, ReactNode } from 'react';
 import { Group } from '@visx/group';
-import Drag, { HandlerArgs as DragArgs } from '@visx/drag/lib/Drag';
+import type { HandlerArgs as DragArgs } from '@visx/drag';
+import { Drag } from '@visx/drag';
 
-import BrushHandle, { BrushHandleRenderProps } from './BrushHandle';
+import type { BrushHandleRenderProps } from './BrushHandle';
+import BrushHandle from './BrushHandle';
 import BrushCorner from './BrushCorner';
 import BrushSelection from './BrushSelection';
 import BrushOverlay from './BrushOverlay';
-import {
+import type {
   MarginShape,
   Point,
   BrushShape,
@@ -17,7 +20,7 @@ import {
 } from './types';
 import { debounce, getPageCoordinates } from './utils';
 
-type PointerHandlerEvent = React.PointerEvent<SVGRectElement>;
+type PointerHandlerEvent = PointerEvent<SVGRectElement>;
 
 export type BaseBrushProps = {
   brushDirection?: 'horizontal' | 'vertical' | 'both';
@@ -32,7 +35,7 @@ export type BaseBrushProps = {
   resizeTriggerAreas?: ResizeTriggerAreas[];
   onBrushStart?: (start: BaseBrushState['start']) => void;
   onBrushEnd?: (state: BaseBrushState) => void;
-  selectedBoxStyle: React.SVGProps<SVGRectElement>;
+  selectedBoxStyle: SVGProps<SVGRectElement>;
   onMouseLeave?: (event: PointerHandlerEvent) => void;
   onMouseUp?: (event: PointerHandlerEvent) => void;
   onMouseMove?: (event: PointerHandlerEvent) => void;
@@ -42,7 +45,7 @@ export type BaseBrushProps = {
   disableDraggingOverlay?: boolean;
   resetOnEnd?: boolean;
   useWindowMoveEvents?: boolean;
-  renderBrushHandle?: (props: BrushHandleRenderProps) => React.ReactNode;
+  renderBrushHandle?: (props: BrushHandleRenderProps) => ReactNode;
 };
 
 export type BaseBrushState = BrushShape & {
@@ -56,8 +59,8 @@ export type UpdateBrush =
   | BaseBrushState
   | ((prevState: Readonly<BaseBrushState>, props: Readonly<BaseBrushProps>) => BaseBrushState);
 
-export default class BaseBrush extends React.Component<BaseBrushProps, BaseBrushState> {
-  private constructor(props: BaseBrushProps) {
+export default class BaseBrush extends Component<BaseBrushProps, BaseBrushState> {
+  constructor(props: BaseBrushProps) {
     super(props);
     const { initialBrushPosition } = props;
     const extent = initialBrushPosition

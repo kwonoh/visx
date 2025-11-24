@@ -1,9 +1,10 @@
-import React, { useContext, useCallback, useMemo } from 'react';
-import LinePath, { LinePathProps } from '@visx/shape/lib/shapes/LinePath';
-import { AxisScale } from '@visx/axis';
+import { Fragment, useContext, useCallback, useMemo, useEffect } from 'react';
+import type { FC, SVGProps } from 'react';
+import type { LinePathProps } from '@visx/shape';
+import { LinePath } from '@visx/shape';
+import type { AxisScale } from '@visx/axis';
 import DataContext from '../../../context/DataContext';
-import { GlyphsProps, SeriesProps } from '../../../types';
-import withRegisteredData, { WithRegisteredDataProps } from '../../../enhancers/withRegisteredData';
+import type { DataContextType, GlyphsProps, SeriesProps } from '../../../types';
 import getScaledValueFactory from '../../../utils/getScaledValueFactory';
 import isValidNumber from '../../../typeguards/isValidNumber';
 import { LINESERIES_EVENT_SOURCE, XYCHART_EVENT_SOURCE } from '../../../constants';
@@ -17,12 +18,12 @@ export type BaseLineSeriesProps<
   Datum extends object,
 > = SeriesProps<XScale, YScale, Datum> & {
   /** Rendered component which is passed path props by BaseLineSeries after processing. */
-  PathComponent?: React.FC<Omit<React.SVGProps<SVGPathElement>, 'ref'>> | 'path';
+  PathComponent?: FC<Omit<SVGProps<SVGPathElement>, 'ref'>> | 'path';
   /** Sets the curve factory (from @visx/curve or d3-curve) for the line generator. Defaults to curveLinear. */
   curve?: LinePathProps<Datum>['curve'];
   /** Given a datakey, returns its color. Falls back to theme color if unspecified or if a null-ish value is returned. */
   colorAccessor?: (dataKey: string) => string | undefined | null;
-} & Omit<React.SVGProps<SVGPathElement>, 'x' | 'y' | 'x0' | 'x1' | 'y0' | 'y1' | 'ref'>;
+} & Omit<SVGProps<SVGPathElement>, 'x' | 'y' | 'x0' | 'x1' | 'y0' | 'y1' | 'ref'>;
 
 function BaseLineSeries<XScale extends AxisScale, YScale extends AxisScale, Datum extends object>({
   colorAccessor,
@@ -42,7 +43,8 @@ function BaseLineSeries<XScale extends AxisScale, YScale extends AxisScale, Datu
   yScale,
   PathComponent = 'path',
   ...lineProps
-}: BaseLineSeriesProps<XScale, YScale, Datum> & WithRegisteredDataProps<XScale, YScale, Datum>) {
+}: BaseLineSeriesProps<XScale, YScale, Datum> &
+  Pick<DataContextType<XScale, YScale, Datum>, 'xScale' | 'yScale'>) {
   const { colorScale, theme } = useContext(DataContext);
   const getScaledX = useMemo(() => getScaledValueFactory(xScale, xAccessor), [xScale, xAccessor]);
   const getScaledY = useMemo(() => getScaledValueFactory(yScale, yAccessor), [yScale, yAccessor]);
@@ -72,14 +74,14 @@ function BaseLineSeries<XScale extends AxisScale, YScale extends AxisScale, Datu
     ({ glyphs }: GlyphsProps<XScale, YScale, Datum>) =>
       captureFocusEvents
         ? glyphs.map((glyph) => (
-            <React.Fragment key={glyph.key}>
+            <Fragment key={glyph.key}>
               {defaultRenderGlyph({
                 ...glyph,
                 color: 'transparent',
                 onFocus: eventEmitters.onFocus,
                 onBlur: eventEmitters.onBlur,
               })}
-            </React.Fragment>
+            </Fragment>
           ))
         : null,
     [captureFocusEvents, eventEmitters.onFocus, eventEmitters.onBlur],
@@ -115,4 +117,37 @@ function BaseLineSeries<XScale extends AxisScale, YScale extends AxisScale, Datu
   );
 }
 
-export default withRegisteredData(BaseLineSeries);
+export default function BaseBaseLineSeriesWithRegisteredData<
+  XScale extends AxisScale,
+  YScale extends AxisScale,
+  Datum extends object,
+>(props: BaseLineSeriesProps<XScale, YScale, Datum>) {
+  const { dataKey, data, xAccessor, yAccessor } = props;
+  const { xScale, yScale, dataRegistry } = useContext(DataContext) as unknown as DataContextType<
+    XScale,
+    YScale,
+    Datum
+  >;
+
+  useEffect(() => {
+    if (dataRegistry) dataRegistry.registerData({ key: dataKey, data, xAccessor, yAccessor });
+    return () => dataRegistry?.unregisterData(dataKey);
+  }, [dataRegistry, dataKey, data, xAccessor, yAccessor]);
+
+  const registryEntry = dataRegistry?.get(dataKey);
+
+  // if scales or data are not available in context, render nothing
+  if (!xScale || !yScale || !registryEntry) return null;
+
+  // otherwise pass props + over-write data/accessors
+  return (
+    <BaseLineSeries
+      {...props}
+      xScale={xScale}
+      yScale={yScale}
+      data={registryEntry.data}
+      xAccessor={registryEntry.xAccessor}
+      yAccessor={registryEntry.yAccessor}
+    />
+  );
+}

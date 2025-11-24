@@ -1,6 +1,6 @@
-import { MouseTouchOrPointerEvent } from '@visx/drag/lib/useDrag';
-import React from 'react';
-import { Scale } from './types';
+import type { MouseTouchOrPointerEvent } from '@visx/drag';
+import type { PointerEvent } from 'react';
+import type { Scale } from './types';
 
 export function scaleInvert(scale: Scale, value: number) {
   // Test if the scale is an ordinalScale or not,
@@ -63,7 +63,7 @@ export function getPageCoordinates(event: MouseTouchOrPointerEvent) {
       pageY: event.touches[0].pageY,
     };
   }
-  const pointerEvent = event as React.PointerEvent;
+  const pointerEvent = event as PointerEvent;
   return {
     pageX: pointerEvent.pageX,
     pageY: pointerEvent.pageY,

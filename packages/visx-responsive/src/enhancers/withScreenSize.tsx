@@ -1,6 +1,7 @@
 import debounce from 'lodash/debounce';
-import React from 'react';
-import { Simplify, DebounceSettings } from '../types';
+import { Component } from 'react';
+import type { ComponentType } from 'react';
+import type { Simplify, DebounceSettings } from '../types';
 
 type WithScreenSizeConfig = {
   /** @deprecated use `debounceTime` instead */
@@ -25,9 +26,9 @@ type WithScreenSizeComponentProps<P extends WithScreenSizeProvidedProps> = Simpl
 >;
 
 export default function withScreenSize<P extends WithScreenSizeProvidedProps>(
-  BaseComponent: React.ComponentType<P>,
-): React.ComponentType<WithScreenSizeComponentProps<P>> {
-  return class WrappedComponent extends React.Component<
+  BaseComponent: ComponentType<P>,
+): ComponentType<WithScreenSizeComponentProps<P>> {
+  return class WrappedComponent extends Component<
     WithScreenSizeComponentProps<P>,
     WithScreenSizeState
   > {

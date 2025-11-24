@@ -1,11 +1,18 @@
 {
   "name": "@visx/threshold",
-  "version": "3.13.0-alpha.0",
+  "version": "4.0.1-alpha.0",
   "description": "visx threshold",
   "sideEffects": false,
   "main": "lib/index.js",
   "module": "esm/index.js",
   "types": "lib/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "import": "./esm/index.js",
+      "require": "./lib/index.js"
+    }
+  },
   "files": [
     "lib",
     "esm"
@@ -25,13 +32,12 @@
   "license": "MIT",
   "dependencies": {
     "@types/react": "*",
-    "@visx/clip-path": "3.13.0-alpha.0",
-    "@visx/shape": "3.13.0-alpha.0",
-    "classnames": "^2.3.1",
-    "prop-types": "^15.5.10"
+    "@visx/clip-path": "workspace:*",
+    "@visx/shape": "workspace:*",
+    "classnames": "^2.3.1"
   },
   "peerDependencies": {
-    "react": "^16.0.0-0 || ^17.0.0-0 || ^18.0.0-0 || ^19.0.0-0"
+    "react": "^16.14.0 || ^17.0.0-0 || ^18.0.0-0 || ^19.0.0-0"
   },
   "publishConfig": {
     "access": "public"

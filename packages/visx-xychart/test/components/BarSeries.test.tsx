@@ -1,14 +1,14 @@
+import { vi } from 'vitest';
 import React, { useContext, useEffect } from 'react';
-import { render } from '@testing-library/react';
+import { render, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { DataContext, AnimatedBarSeries, BarSeries, useEventEmitter } from '../../src';
 import getDataContext from '../mocks/getDataContext';
 import setupTooltipTest from '../mocks/setupTooltipTest';
 import { XYCHART_EVENT_SOURCE } from '../../src/constants';
 
-const series = { key: 'bar', data: [{}, {}], xAccessor: () => 0, yAccessor: () => 10 };
+const series = { data: [{}, {}], xAccessor: () => 0, yAccessor: () => 10 };
 const seriesMissingData = {
-  key: 'barMissingData',
   data: [{ x: 1 }, { x: 0, y: 3 }, { y: 2 }],
   xAccessor: (d: { x?: number }) => d.x,
   yAccessor: (d: { y?: number }) => d.y,
@@ -21,9 +21,9 @@ describe('<BarSeries />', () => {
 
   it('should render rects', () => {
     const { container } = render(
-      <DataContext.Provider value={getDataContext(series)}>
+      <DataContext.Provider value={getDataContext({ key: 'bar', ...series })}>
         <svg>
-          <BarSeries dataKey={series.key} {...series} />
+          <BarSeries dataKey={'bar'} {...series} />
         </svg>
       </DataContext.Provider>,
     );
@@ -32,9 +32,9 @@ describe('<BarSeries />', () => {
 
   it('should render rounded rects if radius is set', () => {
     const { container } = render(
-      <DataContext.Provider value={getDataContext(series)}>
+      <DataContext.Provider value={getDataContext({ key: 'bar', ...series })}>
         <svg>
-          <BarSeries dataKey={series.key} radiusAll radius={4} {...series} />
+          <BarSeries dataKey={'bar'} radiusAll radius={4} {...series} />
         </svg>
       </DataContext.Provider>,
     );
@@ -43,10 +43,10 @@ describe('<BarSeries />', () => {
 
   it('should use colorAccessor if passed', () => {
     const { container } = render(
-      <DataContext.Provider value={getDataContext(series)}>
+      <DataContext.Provider value={getDataContext({ key: 'bar', ...series })}>
         <svg>
           <BarSeries
-            dataKey={series.key}
+            dataKey={'bar'}
             {...series}
             colorAccessor={(_, i) => (i === 0 ? 'banana' : null)}
           />
@@ -60,31 +60,58 @@ describe('<BarSeries />', () => {
 
   it('should not render rects if x or y is invalid', () => {
     const { container } = render(
-      <DataContext.Provider value={getDataContext(seriesMissingData)}>
+      <DataContext.Provider value={getDataContext({ key: 'barMissingData', ...seriesMissingData })}>
         <svg>
-          <BarSeries dataKey={seriesMissingData.key} {...seriesMissingData} />
+          <BarSeries dataKey={'barMissingData'} {...seriesMissingData} />
         </svg>
       </DataContext.Provider>,
     );
     expect(container.querySelectorAll('rect')).toHaveLength(1);
   });
 
-  it('should invoke showTooltip/hideTooltip on pointermove/pointerout', () => {
+  it('should invoke showTooltip/hideTooltip on pointermove/pointerout', async () => {
     expect.assertions(2);
 
-    const showTooltip = jest.fn();
-    const hideTooltip = jest.fn();
+    const showTooltip = vi.fn();
+    const hideTooltip = vi.fn();
 
     const EventEmitter = () => {
       const emit = useEventEmitter();
 
       useEffect(() => {
         if (emit) {
-          emit('pointermove', new MouseEvent('pointermove'), XYCHART_EVENT_SOURCE);
-          expect(showTooltip).toHaveBeenCalledTimes(1);
+          // Get the SVG element to use as event target
+          const svg = document.querySelector('svg');
 
-          emit('pointerout', new MouseEvent('pointerout'), XYCHART_EVENT_SOURCE);
-          expect(showTooltip).toHaveBeenCalledTimes(1);
+          // Create PointerEvent with proper target
+          const moveEvent = new PointerEvent('pointermove', {
+            bubbles: true,
+            clientX: 50,
+            clientY: 50,
+          });
+          Object.defineProperty(moveEvent, 'target', {
+            value: svg,
+            enumerable: true,
+          });
+
+          const outEvent = new PointerEvent('pointerout', {
+            bubbles: true,
+          });
+          Object.defineProperty(outEvent, 'target', {
+            value: svg,
+            enumerable: true,
+          });
+
+          emit(
+            'pointermove',
+            moveEvent as unknown as React.PointerEvent<Element>,
+            XYCHART_EVENT_SOURCE,
+          );
+          emit(
+            'pointerout',
+            outEvent as unknown as React.PointerEvent<Element>,
+            XYCHART_EVENT_SOURCE,
+          );
         }
       });
 
@@ -95,16 +122,23 @@ describe('<BarSeries />', () => {
       const { dataRegistry } = useContext(DataContext);
       // BarSeries won't render until its data is registered
       // wait for that to emit the events
-      return dataRegistry?.get(series.key) ? <EventEmitter /> : null;
+      return dataRegistry?.get('bar') ? <EventEmitter /> : null;
     };
 
     setupTooltipTest(
       <>
-        <BarSeries dataKey={series.key} {...series} />
+        <BarSeries dataKey={'bar'} {...series} />
         <ConditionalEventEmitter />
       </>,
       { showTooltip, hideTooltip },
     );
+
+    // Wait for async event handlers to be called
+    await waitFor(() => {
+      expect(showTooltip).toHaveBeenCalledTimes(1);
+    });
+
+    expect(hideTooltip).toHaveBeenCalledTimes(1);
   });
 });
 
@@ -114,9 +148,9 @@ describe('<AnimatedBarSeries />', () => {
   });
   it('should render an animated.rect', () => {
     const { container } = render(
-      <DataContext.Provider value={getDataContext(series)}>
+      <DataContext.Provider value={getDataContext({ key: 'bar', ...series })}>
         <svg>
-          <AnimatedBarSeries dataKey={series.key} {...series} />
+          <AnimatedBarSeries dataKey={'bar'} {...series} />
         </svg>
       </DataContext.Provider>,
     );

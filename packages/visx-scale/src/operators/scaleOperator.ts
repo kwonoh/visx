@@ -1,6 +1,6 @@
-import { DefaultThresholdInput, PickD3Scale } from '../types/Scale';
-import { ScaleType, PickScaleConfigWithoutType } from '../types/ScaleConfig';
-import { DefaultOutput, StringLike } from '../types/Base';
+import type { DefaultThresholdInput, PickD3Scale } from '../types/Scale';
+import type { ScaleType, PickScaleConfigWithoutType } from '../types/ScaleConfig';
+import type { DefaultOutput, StringLike } from '../types/Base';
 import domain from './domain';
 import range from './range';
 import align from './align';
@@ -43,7 +43,7 @@ export const ALL_OPERATORS = [
   'unknown',
 ] as const;
 
-type OperatorType = typeof ALL_OPERATORS[number];
+type OperatorType = (typeof ALL_OPERATORS)[number];
 
 // Use Record to enforce that all keys in OperatorType must exist.
 const operators: Record<OperatorType, typeof domain> = {

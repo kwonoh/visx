@@ -1,8 +1,9 @@
-import React from 'react';
+import type { ReactNode, SVGProps } from 'react';
 import { Group } from '@visx/group';
-import { geoGraticule, GeoGraticuleGenerator } from '@visx/vendor/d3-geo';
+import type { GeoGraticuleGenerator } from '@visx/vendor/d3-geo';
+import { geoGraticule } from '@visx/vendor/d3-geo';
 // eslint-disable-next-line import/no-unresolved
-import { LineString, MultiLineString, Polygon } from 'geojson';
+import type { LineString, MultiLineString, Polygon } from 'geojson';
 
 export type GraticuleProps = {
   /**
@@ -21,7 +22,7 @@ export type GraticuleProps = {
    */
   outline?: (polygon: Polygon) => string;
   /** Override render function, which is passed the configured graticule generator. */
-  children?: ({ graticule }: { graticule: GeoGraticuleGenerator }) => React.ReactNode;
+  children?: ({ graticule }: { graticule: GeoGraticuleGenerator }) => ReactNode;
   /** Sets the major and minor extents of the graticule generator, which defaults to ⟨⟨-180°, -80° - ε⟩, ⟨180°, 80° + ε⟩⟩. */
   extent?: [[number, number], [number, number]];
   /** Sets the major extent of the graticule generator, which defaults to ⟨⟨-180°, -90° + ε⟩, ⟨180°, 90° - ε⟩⟩. */
@@ -51,7 +52,7 @@ export default function Graticule({
   precision,
   children,
   ...restProps
-}: GraticuleProps & Omit<React.SVGProps<SVGPathElement>, keyof GraticuleProps>) {
+}: GraticuleProps & Omit<SVGProps<SVGPathElement>, keyof GraticuleProps>) {
   const currGraticule = geoGraticule();
 
   if (extent) currGraticule.extent(extent);

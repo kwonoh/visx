@@ -1,7 +1,7 @@
 import util from 'util';
 import childProcess from 'child_process';
 import { ALPHA_RELEASE, MAJOR_RELEASE, MINOR_RELEASE, RELEASE_LABELS } from './constants';
-import { PR } from './types';
+import type { PR } from './types';
 
 const exec = util.promisify(childProcess.exec);
 
@@ -45,6 +45,7 @@ export default async function performLernaRelease(prsSinceLastTag: PR[]) {
 
     const { stdout, stderr } = await exec(
       // --no-verify-access is needed because the CI token isn't valid for that endpoint
+      // provenance is automatically generated when using OIDC Trusted Publishers
       `npx lerna publish ${version} --exact --yes --dist-tag ${distTag}`,
     );
     if (stdout) {
@@ -53,8 +54,14 @@ export default async function performLernaRelease(prsSinceLastTag: PR[]) {
     if (stderr) {
       console.warn('The following stderr was generated during publishing:', stderr);
     }
-  } catch (e) {
-    console.warn('The following error occurred during publishing. Exiting.', e.message);
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : typeof error === 'string'
+        ? error
+        : JSON.stringify(error);
+    console.warn('The following error occurred during publishing. Exiting.', message);
     process.exit(1);
   }
 

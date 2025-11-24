@@ -1,12 +1,12 @@
-import React, { SVGProps, useCallback, useContext, useMemo } from 'react';
-import { AxisScale } from '@visx/axis';
-import { SeriesPoint } from 'd3-shape';
-import { LinePath, StackPathConfig } from '@visx/shape';
-import Area, { AreaProps } from '@visx/shape/lib/shapes/Area';
+import { Fragment, useCallback, useContext, useMemo } from 'react';
+import type { ReactElement, FC, SVGProps } from 'react';
+import type { AxisScale } from '@visx/axis';
+import type { SeriesPoint } from '@visx/vendor/d3-shape';
+import type { StackPathConfig, AreaProps } from '@visx/shape';
+import { LinePath, Area, getFirstItem, getSecondItem } from '@visx/shape';
 import { coerceNumber } from '@visx/scale';
-import { getFirstItem, getSecondItem } from '@visx/shape/lib/util/accessors';
 
-import {
+import type {
   CombinedStackData,
   DataContextType,
   GlyphsProps,
@@ -15,7 +15,7 @@ import {
   SeriesProps,
 } from '../../../types';
 import DataContext from '../../../context/DataContext';
-import { BaseAreaSeriesProps } from './BaseAreaSeries';
+import type { BaseAreaSeriesProps } from './BaseAreaSeries';
 import { BaseGlyphSeries } from './BaseGlyphSeries';
 import useStackedData from '../../../hooks/useStackedData';
 import { getStackValue } from '../../../utils/combineBarStackData';
@@ -39,10 +39,10 @@ export type BaseAreaStackProps<
 > = {
   /** `AreaSeries` elements, note we can't strictly enforce this with TS yet. */
   children:
-    | React.ReactElement<AreaStackChildProps<XScale, YScale, Datum>>
-    | React.ReactElement<AreaStackChildProps<XScale, YScale, Datum>>[];
+    | ReactElement<AreaStackChildProps<XScale, YScale, Datum>>
+    | ReactElement<AreaStackChildProps<XScale, YScale, Datum>>[];
   /** Rendered component which is passed path props by BaseAreaStack after processing. */
-  PathComponent?: React.FC<Omit<React.SVGProps<SVGPathElement>, 'ref'>> | 'path';
+  PathComponent?: FC<Omit<SVGProps<SVGPathElement>, 'ref'>> | 'path';
   /** Sets the curve factory (from @visx/curve or d3-curve) for the line generator. Defaults to curveLinear. */
   curve?: AreaProps<Datum>['curve'];
   /** Whether to render a Line along value of the Area shape (area is fill only). */
@@ -119,9 +119,8 @@ function BaseAreaStack<XScale extends AxisScale, YScale extends AxisScale, Datum
   const stacks = useMemo(
     () =>
       stackedData.map((stack, stackIndex) => {
-        const areaSeries:
-          | React.ReactElement<BaseAreaSeriesProps<XScale, YScale, Datum>>
-          | undefined = seriesChildren.find((child) => child.props.dataKey === stack.key);
+        const areaSeries: ReactElement<BaseAreaSeriesProps<XScale, YScale, Datum>> | undefined =
+          seriesChildren.find((child) => child.props.dataKey === stack.key);
         const {
           data,
           dataKey,
@@ -183,14 +182,14 @@ function BaseAreaStack<XScale extends AxisScale, YScale extends AxisScale, Datum
     ({ glyphs }: GlyphsProps<XScale, YScale, AreaStackDatum>) =>
       captureFocusEvents
         ? glyphs.map((glyph) => (
-            <React.Fragment key={glyph.key}>
+            <Fragment key={glyph.key}>
               {defaultRenderGlyph({
                 ...glyph,
                 color: 'transparent',
                 onFocus: eventEmitters.onFocus,
                 onBlur: eventEmitters.onBlur,
               })}
-            </React.Fragment>
+            </Fragment>
           ))
         : null,
     [captureFocusEvents, eventEmitters.onFocus, eventEmitters.onBlur],
@@ -245,10 +244,9 @@ function BaseAreaStack<XScale extends AxisScale, YScale extends AxisScale, Datum
       {captureFocusEvents &&
         stacks.map((_, i) => {
           // render in reverse stack order tab to top-values first
-          const stack: typeof stacks[number] = stacks[stacks.length - i - 1];
+          const stack: (typeof stacks)[number] = stacks[stacks.length - i - 1];
           return (
-            // @ts-expect-error doesn't like unknown, identity functions aren't typical scales
-            <BaseGlyphSeries<unknown, unknown, AreaStackDatum>
+            <BaseGlyphSeries<any, any, AreaStackDatum>
               key={`glyphs-${stack.key}`}
               dataKey={stack.key}
               data={stack.data}

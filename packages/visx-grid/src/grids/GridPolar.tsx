@@ -1,12 +1,12 @@
-import React, { CSSProperties } from 'react';
+import type { CSSProperties, SVGProps } from 'react';
 import cx from 'classnames';
 import { Group } from '@visx/group';
-import { ScaleInput } from '@visx/scale';
-import { LineProps } from '@visx/shape/lib/shapes/Line';
+import type { ScaleInput } from '@visx/scale';
+import type { LineProps } from '@visx/shape';
 import GridAngle from './GridAngle';
 import GridRadial from './GridRadial';
 
-import { CommonGridProps, GridScale } from '../types';
+import type { CommonGridProps, GridScale } from '../types';
 
 export type GridPolarProps<
   AngleScale extends GridScale,
@@ -47,15 +47,11 @@ export type GridPolarProps<
   /**
    * Style object set as the angle line path style attribute.
    */
-  lineStyleAngle?: CSSProperties &
-    LineProps &
-    Omit<React.SVGProps<SVGLineElement>, keyof LineProps>;
+  lineStyleAngle?: CSSProperties & LineProps & Omit<SVGProps<SVGLineElement>, keyof LineProps>;
   /**
    * Style object set as the radius line path style attribute.
    */
-  lineStyleRadial?: CSSProperties &
-    LineProps &
-    Omit<React.SVGProps<SVGLineElement>, keyof LineProps>;
+  lineStyleRadial?: CSSProperties & LineProps & Omit<SVGProps<SVGLineElement>, keyof LineProps>;
   /**
    * The number of angle ticks wanted for the grid. Note this is approximate due to d3's algorithm,
    * you can use tickValues for greater control

@@ -1,9 +1,9 @@
-import React from 'react';
 import cx from 'classnames';
-import { stack as d3stack, SeriesPoint } from 'd3-shape';
+import type { SeriesPoint } from '@visx/vendor/d3-shape';
+import { stack as d3stack } from '@visx/vendor/d3-shape';
 import { Group } from '@visx/group';
-import { ScaleInput } from '@visx/scale';
-import { AddSVGProps, PositionScale, BaseBarStackProps, StackKey, Accessor } from '../types';
+import type { ScaleInput } from '@visx/scale';
+import type { AddSVGProps, PositionScale, BaseBarStackProps, StackKey, Accessor } from '../types';
 import { getFirstItem, getSecondItem } from '../util/accessors';
 import getBandwidth from '../util/getBandwidth';
 import setNumOrAccessor from '../util/setNumberOrNumberAccessor';

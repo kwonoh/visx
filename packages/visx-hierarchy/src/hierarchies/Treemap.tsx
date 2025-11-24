@@ -1,11 +1,12 @@
-/* eslint-disable @typescript-eslint/unbound-method */
-import React from 'react';
+import { createElement } from 'react';
+import type { ReactNode, FunctionComponent, ComponentClass } from 'react';
 import cx from 'classnames';
 import { Group } from '@visx/group';
-import { treemap as d3treemap, HierarchyRectangularNode, HierarchyNode } from 'd3-hierarchy';
+import type { HierarchyRectangularNode, HierarchyNode } from 'd3-hierarchy';
+import { treemap as d3treemap } from 'd3-hierarchy';
 import HierarchyDefaultRectNode from '../HierarchyDefaultRectNode';
 import setNumberOrNumberAccessor from '../utils/setNumOrNumAccessor';
-import { TileMethod } from '../types';
+import type { TileMethod } from '../types';
 
 export type NodeComponentProps<Datum> = { node: HierarchyRectangularNode<Datum> };
 
@@ -15,7 +16,7 @@ export type TreemapProps<Datum> = {
   /** The root hierarchy node from which to derive the treemap layout. */
   root: HierarchyNode<Datum>;
   /** Render override function which is passed the computed pack layout data. */
-  children?: (pack: HierarchyRectangularNode<Datum>) => React.ReactNode;
+  children?: (pack: HierarchyRectangularNode<Datum>) => ReactNode;
   /** top offset applied to the g element container. */
   top?: number;
   /** left offset applied to the g element container. */
@@ -47,8 +48,8 @@ export type TreemapProps<Datum> = {
   paddingLeft?: NumerOrNumberAccessor<Datum>;
   /** Component which renders a single pack node, passed the node object. */
   nodeComponent?:
-    | React.FunctionComponent<NodeComponentProps<Datum>>
-    | React.ComponentClass<NodeComponentProps<Datum>>;
+    | FunctionComponent<NodeComponentProps<Datum>>
+    | ComponentClass<NodeComponentProps<Datum>>;
 };
 
 export default function Treemap<Datum>({
@@ -91,7 +92,7 @@ export default function Treemap<Datum>({
         data
           .descendants()
           .map((node, i) => (
-            <Group key={`treemap-node-${i}`}>{React.createElement(nodeComponent, { node })}</Group>
+            <Group key={`treemap-node-${i}`}>{createElement(nodeComponent, { node })}</Group>
           ))}
     </Group>
   );

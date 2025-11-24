@@ -1,11 +1,15 @@
-import React from 'react';
+import type { CSSProperties } from 'react';
 import { Group } from '@visx/group';
 
 export type ShapeCircleProps = {
+  /** The fill color for the circle. */
   fill?: string;
+  /** Width of the container. The circle radius is derived from max(width, height). */
   width?: string | number;
+  /** Height of the container. The circle radius is derived from max(width, height). */
   height?: string | number;
-  style?: React.CSSProperties;
+  /** Additional CSS styles to apply to the circle. */
+  style?: CSSProperties;
 };
 
 export default function ShapeCircle({ fill, width, height, style }: ShapeCircleProps) {

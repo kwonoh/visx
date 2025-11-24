@@ -1,3 +1,4 @@
+// @visx/zoom
 export { default as Zoom } from './Zoom';
 export {
   identityMatrix,
@@ -10,3 +11,6 @@ export {
   multiplyMatrices,
   composeMatrices,
 } from './util/matrix';
+
+export type * from './types';
+export type { ZoomProps } from './Zoom';

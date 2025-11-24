@@ -1,5 +1,6 @@
-import React, { useContext, useEffect } from 'react';
-import { render } from '@testing-library/react';
+import { vi } from 'vitest';
+import React, { useContext, useEffect, useRef } from 'react';
+import { render, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import {
   BarStack,
@@ -19,12 +20,11 @@ const providerProps = {
 } as const;
 
 const accessors = {
-  xAccessor: (d: { x?: number }) => d.x,
-  yAccessor: (d: { y?: number }) => d.y,
+  xAccessor: (d: { x?: number }) => d?.x,
+  yAccessor: (d: { y?: number }) => d?.y,
 };
 
 const series1 = {
-  key: 'bar1',
   data: [
     { x: 10, y: 5 },
     { x: 7, y: 5 },
@@ -33,7 +33,6 @@ const series1 = {
 };
 
 const series2 = {
-  key: 'bar2',
   data: [
     { x: 10, y: 5 },
     { x: 7, y: 20 },
@@ -41,7 +40,6 @@ const series2 = {
   ...accessors,
 };
 const seriesMissingData = {
-  key: 'seriesMissingData',
   data: [{ y: 5 }, { x: 7 }, { x: 7, y: 20 }],
   ...accessors,
 };
@@ -56,8 +54,8 @@ describe('<BarStack />', () => {
       <DataProvider {...providerProps}>
         <svg>
           <BarStack>
-            <BarSeries dataKey={series1.key} {...series1} />
-            <BarSeries dataKey={series2.key} {...series2} />
+            <BarSeries dataKey={'bar1'} {...series1} />
+            <BarSeries dataKey={'bar2'} {...series2} />
           </BarStack>
         </svg>
       </DataProvider>,
@@ -71,8 +69,8 @@ describe('<BarStack />', () => {
       <DataProvider {...providerProps}>
         <svg>
           <BarStack>
-            <BarSeries dataKey={series1.key} radiusAll radius={4} {...series1} />
-            <BarSeries dataKey={series2.key} {...series2} />
+            <BarSeries dataKey={'bar1'} radiusAll radius={4} {...series1} />
+            <BarSeries dataKey={'bar2'} {...series2} />
           </BarStack>
         </svg>
       </DataProvider>,
@@ -85,9 +83,9 @@ describe('<BarStack />', () => {
       <DataProvider {...providerProps}>
         <svg>
           <BarStack>
-            <BarSeries dataKey={series1.key} {...series1} />
+            <BarSeries dataKey={'bar1'} {...series1} />
             <BarSeries
-              dataKey={series2.key}
+              dataKey={'bar2'}
               {...series2}
               colorAccessor={(_, i) => (i === 0 ? 'banana' : null)}
             />
@@ -107,8 +105,8 @@ describe('<BarStack />', () => {
       <DataProvider {...providerProps}>
         <svg>
           <BarStack>
-            <BarSeries dataKey={series1.key} {...series1} />
-            <BarSeries dataKey={seriesMissingData.key} {...seriesMissingData} />
+            <BarSeries dataKey={'bar1'} {...series1} />
+            <BarSeries dataKey={'seriesMissingData'} {...seriesMissingData} />
           </BarStack>
         </svg>
       </DataProvider>,
@@ -117,15 +115,12 @@ describe('<BarStack />', () => {
     expect(RectElements).toHaveLength(3);
   });
 
-  it('should update scale domain to include stack sums including negative values', () => {
-    expect.hasAssertions();
+  it('should update scale domain to include stack sums including negative values', async () => {
+    let yScale: any;
 
     function Assertion() {
-      const { yScale, dataRegistry } = useContext(DataContext);
-      // eslint-disable-next-line jest/no-if
-      if (yScale && dataRegistry?.keys().length === 2) {
-        expect(yScale.domain()).toEqual([-20, 10]);
-      }
+      yScale = useContext(DataContext).yScale;
+
       return null;
     }
 
@@ -133,9 +128,9 @@ describe('<BarStack />', () => {
       <DataProvider {...providerProps}>
         <svg>
           <BarStack>
-            <BarSeries dataKey={series1.key} {...series1} />
+            <BarSeries dataKey={'bar1'} {...series1} />
             <BarSeries
-              dataKey={series2.key}
+              dataKey={'bar2'}
               {...series2}
               data={[
                 { x: 10, y: 5 },
@@ -147,28 +142,60 @@ describe('<BarStack />', () => {
         <Assertion />
       </DataProvider>,
     );
+
+    await waitFor(() => {
+      expect(yScale.domain()).toEqual([-20, 10]);
+    });
   });
 
-  it('should invoke showTooltip/hideTooltip on pointermove/pointerout', () => {
+  it('should invoke showTooltip/hideTooltip on pointermove/pointerout', async () => {
     expect.assertions(2);
 
-    const showTooltip = jest.fn();
-    const hideTooltip = jest.fn();
+    const showTooltip = vi.fn();
+    const hideTooltip = vi.fn();
 
     const EventEmitter = () => {
       const emit = useEventEmitter();
       const { yScale } = useContext(DataContext);
+      const hasEmitted = useRef(false);
 
       useEffect(() => {
         // checking for yScale ensures stack data is registered and stacks are rendered
-        if (emit && yScale) {
-          //  not a React.MouseEvent
-          emit('pointermove', new MouseEvent('pointermove'), XYCHART_EVENT_SOURCE);
-          expect(showTooltip).toHaveBeenCalledTimes(2); // one per key
+        if (emit && yScale && !hasEmitted.current) {
+          hasEmitted.current = true;
 
-          //  not a React.MouseEvent
-          emit('pointerout', new MouseEvent('pointerout'), XYCHART_EVENT_SOURCE);
-          expect(showTooltip).toHaveBeenCalled();
+          // Get the SVG element to use as event target
+          const svg = document.querySelector('svg');
+
+          // Create PointerEvent with proper target
+          const moveEvent = new PointerEvent('pointermove', {
+            bubbles: true,
+            clientX: 50,
+            clientY: 50,
+          });
+          Object.defineProperty(moveEvent, 'target', {
+            value: svg,
+            enumerable: true,
+          });
+
+          const outEvent = new PointerEvent('pointerout', {
+            bubbles: true,
+          });
+          Object.defineProperty(outEvent, 'target', {
+            value: svg,
+            enumerable: true,
+          });
+
+          emit(
+            'pointermove',
+            moveEvent as unknown as React.PointerEvent<Element>,
+            XYCHART_EVENT_SOURCE,
+          );
+          emit(
+            'pointerout',
+            outEvent as unknown as React.PointerEvent<Element>,
+            XYCHART_EVENT_SOURCE,
+          );
         }
       });
 
@@ -178,13 +205,20 @@ describe('<BarStack />', () => {
     setupTooltipTest(
       <>
         <BarStack>
-          <BarSeries dataKey={series1.key} {...series1} />
-          <BarSeries dataKey={series2.key} {...series2} />
+          <BarSeries dataKey={'bar1'} {...series1} />
+          <BarSeries dataKey={'bar2'} {...series2} />
         </BarStack>
         <EventEmitter />
       </>,
       { showTooltip, hideTooltip },
     );
+
+    // Wait for async event handlers to be called
+    await waitFor(() => {
+      expect(showTooltip).toHaveBeenCalledTimes(2); // one per key
+    });
+
+    expect(hideTooltip).toHaveBeenCalledTimes(1);
   });
 });
 
@@ -197,8 +231,8 @@ describe('<AnimatedBarStack />', () => {
       <DataProvider {...providerProps}>
         <svg>
           <AnimatedBarStack>
-            <BarSeries dataKey={series1.key} {...series1} />
-            <BarSeries dataKey={series2.key} {...series2} />
+            <BarSeries dataKey={'bar1'} {...series1} />
+            <BarSeries dataKey={'bar2'} {...series2} />
           </AnimatedBarStack>
         </svg>
       </DataProvider>,

@@ -1,11 +1,18 @@
 {
   "name": "@visx/wordcloud",
-  "version": "3.13.0-alpha.0",
+  "version": "4.0.1-alpha.0",
   "description": "visx wordcloud",
   "sideEffects": false,
   "main": "lib/index.js",
   "module": "esm/index.js",
   "types": "lib/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "import": "./esm/index.js",
+      "require": "./lib/index.js"
+    }
+  },
   "files": [
     "lib",
     "esm"
@@ -29,12 +36,11 @@
   },
   "homepage": "https://github.com/airbnb/visx#readme",
   "peerDependencies": {
-    "react": "^16.8.0-0 || ^17.0.0-0 || ^18.0.0-0 || ^19.0.0-0"
+    "react": "^16.14.0 || ^17.0.0-0 || ^18.0.0-0 || ^19.0.0-0"
   },
   "dependencies": {
-    "@types/d3-cloud": "1.2.5",
-    "@visx/group": "3.13.0-alpha.0",
-    "d3-cloud": "^1.2.5"
+    "@visx/group": "workspace:*",
+    "d3-cloud": "^1.2.7"
   },
   "publishConfig": {
     "access": "public"

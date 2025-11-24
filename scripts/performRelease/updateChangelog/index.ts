@@ -1,9 +1,8 @@
-import fetch from 'node-fetch';
 import fs from 'fs';
 import util from 'util';
 import childProcess from 'child_process';
 
-import { PR } from '../types';
+import type { PR } from '../types';
 import getChangelogAddition from './getChangelogAddition';
 import mergeUpdateIntoChangelog from './mergeUpdateIntoChangelog';
 
@@ -45,7 +44,13 @@ export default async function updateChangelog(prs: PR[], tagName: string) {
     }
   } catch (error) {
     console.log(`Could not update CHANGELOG.md from master. Aborting.`);
-    console.warn(error.message);
+    const message =
+      error instanceof Error
+        ? error.message
+        : typeof error === 'string'
+        ? error
+        : JSON.stringify(error);
+    console.warn(message);
     process.exit(1);
   }
 }

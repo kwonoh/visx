@@ -5,7 +5,8 @@ import { Group } from '@visx/group';
 import { LinePath } from '@visx/shape';
 import { scaleTime, scaleLinear } from '@visx/scale';
 import { MarkerArrow, MarkerCross, MarkerX, MarkerCircle, MarkerLine } from '@visx/marker';
-import generateDateValue, { DateValue } from '@visx/mock-data/lib/generators/genDateValue';
+import type { DateValue } from '@visx/mock-data';
+import { genDateValue as generateDateValue } from '@visx/mock-data';
 
 type CurveType = keyof typeof allCurves;
 
